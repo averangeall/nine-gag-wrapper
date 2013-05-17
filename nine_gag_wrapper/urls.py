@@ -5,6 +5,11 @@ from django.conf.urls import patterns, include, url
 # admin.autodiscover()
 
 urlpatterns = patterns('',
+    url(r'^$', 'crowd_lookup.views.index'),
+
+    url(r'^lookup/recomm/(?P<gag_id>\d+)$', 'crowd_lookup.views.get_recomm_words'),
+    url(r'^lookup/query/$', 'crowd_lookup.views.query_word'),
+
     # Examples:
     # url(r'^$', 'nine_gag_wrapper.views.home', name='home'),
     # url(r'^nine_gag_wrapper/', include('nine_gag_wrapper.foo.urls')),
