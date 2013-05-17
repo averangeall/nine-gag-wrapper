@@ -5,6 +5,8 @@ from django.conf.urls import patterns, include, url
 # admin.autodiscover()
 
 urlpatterns = patterns('',
+    url(r'^$', 'crowd_lookup.views.index'),
+
     # Examples:
     # url(r'^$', 'nine_gag_wrapper.views.home', name='home'),
     # url(r'^nine_gag_wrapper/', include('nine_gag_wrapper.foo.urls')),
