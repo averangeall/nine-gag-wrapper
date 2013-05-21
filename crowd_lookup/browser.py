@@ -51,6 +51,9 @@ class BaseBrowser:
         soup = BeautifulSoup(content)
         return soup
 
+    def get_name(self):
+        return ''
+
 class DrEye(BaseBrowser):
     def query(self, word):
         url = 'http://dict.dreye.com/ews/%s--01--.html' % word.lower()
