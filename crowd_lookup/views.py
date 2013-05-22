@@ -13,12 +13,18 @@ def index(request):
     gag_id = 'ajYbzzx'
     user_id = 84920
     word_str = request.GET.get('word_str', '')
+    word_id = request.GET.get('word_id', None)
     urls = []
     urls.append(('get recomm', 
                  '/lookup/recomm/get/?gag_id=%s&user_id=%d&valid_key=hello' % (gag_id, user_id)))
     if word_str != '':
         urls.append(('query explain: %s' % word_str, 
                      '/lookup/explain/query/?gag_id=%s&user_id=%d&valid_key=hello&word_str=%s' % (gag_id, user_id, word_str)))
+    if word_id:
+        urls.append(('query explain: %s' % word_id,
+                     '/lookup/explain/query/?gag_id=%s&user_id=%d&valid_key=hello&word_id=%s' % (gag_id, user_id, word_id)))
+        urls.append(('delete recomm: %s' % word_id,
+                     '/lookup/recomm/delete/?gag_id=%s&user_id=%d&valid_key=hello&word_id=%s' % (gag_id, user_id, word_id)))
     return render_to_response('index.html', {'gag_id': gag_id, 'urls': urls})
 
 def get_recomm(request):

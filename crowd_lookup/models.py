@@ -3,10 +3,19 @@ from django.db import models
 class Word(models.Model):
     content = models.TextField()
 
+    def to_dict(self):
+        res = {}
+        res['id'] = self.id
+        res['content'] = self.content
+        return res
+
 class Recomm(models.Model):
     gag_id = models.TextField()
     word = models.ForeignKey(Word)
     score = models.FloatField()
+
+    def to_dict(self):
+        return self.word.to_dict()
 
 class Explain(models.Model):
     REPR_TEXT = 'TE'
@@ -26,6 +35,7 @@ class Explain(models.Model):
 
     def to_dict(self):
         res = {}
+        res['id'] = self.id;
         res['type'] = dict(self.REPR_TYPE_CHOICES)[self.repr_type]
         res['content'] = self.content
         res['source'] = self.source

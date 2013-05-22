@@ -8,8 +8,7 @@ class NineDict:
 
     def get_recomm(self, gag_id, user_id):
         recomms = models.Recomm.objects.filter(gag_id=gag_id, score__gt=0.5)
-        word_strs = [recomm.word.content for recomm in recomms]
-        return word_strs
+        return self._make_dicts(recomms)
 
     def delete_recomm(self, word_id, gag_id, user_id):
         return True
@@ -74,18 +73,18 @@ class NineDict:
     def _normalize_word_str(self, word_str):
         return word_str.strip().lower()
 
-    def _make_dict_expls(self, expls):
-        return [expl.to_dict() for expl in expls]
+    def _make_dicts(self, objs):
+        return [obj.to_dict() for obj in objs]
 
     def _get_expls_in_database(self, word, gag_id, user_id):
         expls = models.Explain.objects.filter(word=word)
-        return self._make_dict_expls(expls)
+        return self._make_dicts(expls)
 
     def _get_expls_from_web(self, word, gag_id):
         expls = []
         #expls += self._get_expls_from_browser(word, self._dr_eye)
         expls += self._get_expls_from_browser(word, self._google_image)
-        return self._make_dict_expls(expls)
+        return self._make_dicts(expls)
 
     def _get_expls_from_browser(self, word, br):
         expl_tuples = br.query(word.content)

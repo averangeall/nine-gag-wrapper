@@ -7,9 +7,13 @@
 
     <body>
         <p>gag_id: {{ gag_id }}</p>
-        <form method="get">
-            <input type="text" name="word_str" />
+        <form>
+            word_str: <input type="text" name="word_str" /><br />
         </form>
+        <form>
+            word_id: <input type="text" name="word_id" /><br />
+        </form>
+        <p />
         {% for url in urls %}
             <a href="{{ url.1 }}">{{ url.0 }}</a><br />
         {% endfor %}
