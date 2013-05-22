@@ -5,9 +5,11 @@ from django.shortcuts import render_to_response
 from dictionary import NineDict
 from logger import Logger
 from tools import get_basic_info, make_json_respond
+from manager import AllManagers
 
 dictt = NineDict()
 log = Logger()
+mgr = AllManagers()
 
 def index(request):
     gag_id = 'ajYbzzx'
@@ -28,64 +30,77 @@ def index(request):
     return render_to_response('index.html', {'gag_id': gag_id, 'urls': urls})
 
 def get_recomm(request):
-    gag_id, user_id, user_ip, is_valid = get_basic_info(request)
+    gag_id, user, user_ip, is_valid = get_basic_info(request)
     if not is_valid:
-        log.put(gag_id, user_id, user_ip, 'GET_RECOMM', False, 'key invalid')
+        log.put(gag_id, user, user_ip, 'GET_RECOMM', False, 'key invalid')
         return HttpResponse(make_json_respond('INVALID'))
 
-    recomm = dictt.get_recomm(gag_id, user_id)
+    recomm = dictt.get_recomm(gag_id, user)
     if recomm == None:
-        log.put(gag_id, user_id, user_ip, 'GET_RECOMM', True, 'something went wrong')
+        log.put(gag_id, user, user_ip, 'GET_RECOMM', True, 'something went wrong')
         return HttpResponse(make_json_respond('FAIL'))
-    log.put(gag_id, user_id, user_ip, 'GET_RECOMM', True, 'got %d recomm' % len(recomm))
+    log.put(gag_id, user, user_ip, 'GET_RECOMM', True, 'got %d recomm' % len(recomm))
     return HttpResponse(make_json_respond('OKAY', recomm))
 
 def delete_recomm(request):
-    gag_id, user_id, user_ip, is_valid = get_basic_info(request)
+    gag_id, user, user_ip, is_valid = get_basic_info(request)
     if not is_valid:
         return HttpResponse(make_json_respond('INVALID'))
 
     word_id = request.GET.get('word_id', None)
-    success = dictt.delete_recomm(word_id, gag_id, user_id)
+
+    word = mgr.word.get(word_id=word_id)
+    success = dictt.delete_recomm(word, gag_id, user)
     if not success:
         return HttpResponse(make_json_respond('FAIL'))
     return HttpResponse(make_json_respond('OKAY'))
 
 def query_explain(request):
-    gag_id, user_id, user_ip, is_valid = get_basic_info(request)
+    gag_id, user, user_ip, is_valid = get_basic_info(request)
     if not is_valid:
         return HttpResponse(make_json_respond('INVALID'))
 
     word_id = request.GET.get('word_id', None)
+    word_str = request.GET.get('word_str', '')
+
     if word_id is not None:
-        expls = dictt.get_expls_by_word_id(word_id, gag_id, user_id)
+        word = mgr.word.get(word_id=word_id)
     else:
-        word_str = request.GET.get('word_str', '')
-        expls = dictt.get_expls_by_word_str(word_str, gag_id, user_id)
+        word = mgr.word.get(word_str=word_str)
+
+    expls = dictt.get_expls(word, gag_id, user)
     if expls == None:
         return HttpResponse(make_json_respond('FAIL'))
     return HttpResponse(make_json_respond('OKAY', expls))
 
 def delete_explain(request):
-    gag_id, user_id, user_ip, is_valid = get_basic_info(request)
+    gag_id, user, user_ip, is_valid = get_basic_info(request)
     if not is_valid:
         return HttpResponse(make_json_respond('INVALID'))
 
     word_id = request.GET.get('word_id', None)
     expl_id = request.GET.get('expl_id', None)
-    success = dictt.delete_expl(expl_id, word_id, gag_id, user_id)
+
+    word = mgr.word.get(word_id=word_id)
+    expl = mgr.explain.get(expl_id=expl_id)
+
+    success = dictt.delete_expl(expl, word, gag_id, user)
     if not success:
         return HttpResponse(make_json_respond('FAIL'))
     return HttpResponse(make_json_respond('OKAY'))
 
 def provide_explain(request):
-    gag_id, user_id, user_ip, is_valid = get_basic_info(request)
+    gag_id, user, user_ip, is_valid = get_basic_info(request)
     if not is_valid:
         return HttpResponse(make_json_respond('INVALID'))
 
     word_id = request.GET.get('word_id', None)
     expl_str = request.GET.get('expl_str', '')
-    success = dictt.add_expl(expl_str, word_id, gag_id, user_id)
+
+    word = mgr.word.get(word_id=word_id)
+    expl = mgr.explain.get(expl_str=expl_str, word=word)
+
+    success = dictt.add_expl(expl, word, gag_id, user)
     if not success:
         return HttpResponse(make_json_respond('FAIL'))
     return HttpResponse(make_json_respond('OKAY'))
