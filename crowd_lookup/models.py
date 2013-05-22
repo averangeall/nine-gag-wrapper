@@ -51,10 +51,18 @@ class Prefer(models.Model):
 class User(models.Model):
     id = models.IntegerField(primary_key=True)
 
-class Queried(models.Model):
+class RecommRecord(models.Model):
+    VAL_POSITIVE = 'PO'
+    VAL_NEGATIVE = 'NE'
+    VAL_TYPE_CHOICES = (
+        (VAL_POSITIVE, 'positive'),
+        (VAL_NEGATIVE, 'negative'),
+    )
+
     user = models.ForeignKey(User)
     gag_id = models.TextField()
     word = models.ForeignKey(Word)
+    val_type = models.CharField(max_length=2, choices=VAL_TYPE_CHOICES)
 
 class Log(models.Model):
     LOG_ENTER_WORD = 'EN'

@@ -11,23 +11,27 @@ class NineDict:
         return self._make_dicts(recomms)
 
     def delete_recomm(self, word_id, gag_id, user_id):
-        return True
+        try:
+            word = models.Word.objects.get(id=word_id)
+        except:
+            return False
+        return self._recomm_going_down(gag_id, word)
 
     def get_expls_by_word_id(self, word_id, gag_id, user_id):
         try:
             word = models.Word.objects.get(id=word_id)
         except:
-            return []
+            return None
         return self._get_expls_by_word(word, gag_id, user_id)
 
     def get_expls_by_word_str(self, word_str, gag_id, user_id):
         word = self._get_word_from_word_str(word_str)
         user = models.User.objects.get(id=user_id)
-        querieds = models.Queried.objects.filter(user_id=user_id, gag_id=gag_id, word=word)
-        if not querieds:
+        records = models.RecommRecord.objects.filter(user_id=user_id, gag_id=gag_id, word=word)
+        if not records:
             self._recomm_going_up(gag_id, word)
-            queried = models.Queried(user_id=user_id, gag_id=gag_id, word=word)
-            queried.save()
+            record = models.RecommRecord(user_id=user_id, gag_id=gag_id, word=word, val_type=models.RecommRecord.VAL_POSITIVE)
+            record.save()
         return self._get_expls_by_word(word, gag_id, user_id)
 
     def delete_expl(self, expl_id, word_id, gag_id, user_id):
@@ -51,6 +55,17 @@ class NineDict:
             assert len(words) == 1
             word = words[0]
         return word
+
+    def _recomm_going_down(self, gag_id, word):
+        recomms = models.Recomm.objects.filter(gag_id=gag_id, word=word)
+        if not recomms:
+            return False
+        else:
+            assert len(recomms) == 1
+            recomm = recomms[0]
+            recomm.score -= 0.6
+            recomm.save()
+            return True
 
     def _recomm_going_up(self, gag_id, word):
         recomms = models.Recomm.objects.filter(gag_id=gag_id, word=word)
