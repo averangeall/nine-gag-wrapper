@@ -10,11 +10,16 @@ dictt = NineDict()
 log = Logger()
 
 def index(request):
-    testings = [
-        ('get recomm', '/lookup/recomm/get/?gag_id=ae8ffg&user_id=hf823&valid_key=hello'),
-        ('delete recomm', '/lookup/recomm/delete/?gag_id=ae8ffg&user_id=hf823&valid_key=hello&word_id=35'),
-    ]
-    return render_to_response('index.html', {'testings': testings})
+    gag_id = 'ajYbzzx'
+    user_id = 84920
+    word_str = request.GET.get('word_str', '')
+    urls = []
+    urls.append(('get recomm', 
+                 '/lookup/recomm/get/?gag_id=%s&user_id=%d&valid_key=hello' % (gag_id, user_id)))
+    if word_str != '':
+        urls.append(('query explain: %s' % word_str, 
+                     '/lookup/explain/query/?gag_id=%s&user_id=%d&valid_key=hello&word_str=%s' % (gag_id, user_id, word_str)))
+    return render_to_response('index.html', {'gag_id': gag_id, 'urls': urls})
 
 def get_recomm(request):
     gag_id, user_id, user_ip, is_valid = get_basic_info(request)

@@ -6,10 +6,17 @@
     </head>
 
     <body>
-        {% for testing in testings %}
-            <a href="{{ testing.1 }}">{{ testing.0 }}</a><br />
+        <p>gag_id: {{ gag_id }}</p>
+        <form method="get">
+            <input type="text" name="word_str" />
+        </form>
+        {% for url in urls %}
+            <a href="{{ url.1 }}">{{ url.0 }}</a><br />
         {% endfor %}
     </body>
+
+    <script>
+    </script>
 </html>
 
 

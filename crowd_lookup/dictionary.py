@@ -7,40 +7,29 @@ class NineDict:
         self._google_image = browser.GoogleImage()
 
     def get_recomm(self, gag_id, user_id):
-        #recomms = models.Recomm.objects.filter(gag_id=gag_id)
-        #words = [recomm.word.content for recomm in recomms]
-        words = ['Cool', 'Yes']
-        return words
+        recomms = models.Recomm.objects.filter(gag_id=gag_id, score__gt=0.5)
+        word_strs = [recomm.word.content for recomm in recomms]
+        return word_strs
 
     def delete_recomm(self, word_id, gag_id, user_id):
         return True
 
-    def get_expls_by_word(self, word, gag_id, user_id):
-        expls = []
-        expls += self._get_expls_in_database(word, gag_id)
-        if len(expls) == 0:
-            expls += self._get_expls_from_web(word, gag_id)
-        return expls
-
     def get_expls_by_word_id(self, word_id, gag_id, user_id):
-        words = models.Word.objects.filter(id=word_id)
-        if len(words) == 0:
-            return None
-        assert len(words) == 1
-        return get_expls_by_word(words[0], gag_id, user_id)
+        try:
+            word = models.Word.objects.get(id=word_id)
+        except:
+            return []
+        return self._get_expls_by_word(word, gag_id, user_id)
 
     def get_expls_by_word_str(self, word_str, gag_id, user_id):
-        word_str = self._normalize_word_str(word_str)
-        if word_str == '':
-            return None
-        words = models.Word.objects.filter(content=word_str)
-        if len(words) == 0:
-            new = models.Word(content=word_str)
-            new.save()
-            return new
-        else:
-            assert len(words) == 1
-            return words[0]
+        word = self._get_word_from_word_str(word_str)
+        user = models.User.objects.get(id=user_id)
+        querieds = models.Queried.objects.filter(user_id=user_id, gag_id=gag_id, word=word)
+        if not querieds:
+            self._recomm_going_up(gag_id, word)
+            queried = models.Queried(user_id=user_id, gag_id=gag_id, word=word)
+            queried.save()
+        return self._get_expls_by_word(word, gag_id, user_id)
 
     def delete_expl(self, expl_id, word_id, gag_id, user_id):
         return True
@@ -51,6 +40,37 @@ class NineDict:
             return False
         return True
 
+    def _get_word_from_word_str(self, word_str):
+        word_str = self._normalize_word_str(word_str)
+        if word_str == '':
+            return None
+        words = models.Word.objects.filter(content=word_str)
+        if not words:
+            word = models.Word(content=word_str)
+            word.save()
+        else:
+            assert len(words) == 1
+            word = words[0]
+        return word
+
+    def _recomm_going_up(self, gag_id, word):
+        recomms = models.Recomm.objects.filter(gag_id=gag_id, word=word)
+        if not recomms:
+            recomm = models.Recomm(gag_id=gag_id, word=word, score=0.0)
+            recomm.save()
+        else:
+            assert len(recomms) == 1
+            recomm = recomms[0]
+            recomm.score += 1.0
+            recomm.save()
+
+    def _get_expls_by_word(self, word, gag_id, user_id):
+        expls = []
+        expls += self._get_expls_in_database(word, gag_id, user_id)
+        if not expls:
+            expls += self._get_expls_from_web(word, gag_id)
+        return expls
+
     def _normalize_word_str(self, word_str):
         return word_str.strip().lower()
 
@@ -59,16 +79,17 @@ class NineDict:
 
     def _get_expls_in_database(self, word, gag_id, user_id):
         expls = models.Explain.objects.filter(word=word)
-        return _make_dict_expls(expls)
+        return self._make_dict_expls(expls)
 
     def _get_expls_from_web(self, word, gag_id):
         expls = []
         #expls += self._get_expls_from_browser(word, self._dr_eye)
-        #expls += self._get_expls_from_browser(word, self._google_image)
-        return _make_dict_expls(expls)
+        expls += self._get_expls_from_browser(word, self._google_image)
+        return self._make_dict_expls(expls)
 
     def _get_expls_from_browser(self, word, br):
-        expl_tuples = self._dr_eye.query(word.content)
+        expl_tuples = br.query(word.content)
+        expls = []
         for expl_str, expl_url, expl_repr_type in expl_tuples:
             expl = models.Explain(word=word,
                                   repr_type=expl_repr_type,
@@ -76,5 +97,6 @@ class NineDict:
                                   source=br.get_name(),
                                   link=expl_url)
             expl.save()
-        return _make_dict_expls(expls)
+            expls.append(expl)
+        return expls
 

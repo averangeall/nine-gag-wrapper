@@ -4,7 +4,7 @@ class Word(models.Model):
     content = models.TextField()
 
 class Recomm(models.Model):
-    gag_id = models.IntegerField()
+    gag_id = models.TextField()
     word = models.ForeignKey(Word)
     score = models.FloatField()
 
@@ -28,13 +28,23 @@ class Explain(models.Model):
         res = {}
         res['type'] = dict(self.REPR_TYPE_CHOICES)[self.repr_type]
         res['content'] = self.content
+        res['source'] = self.source
+        res['link'] = self.link
         return res
 
 class Prefer(models.Model):
-    gag_id = models.IntegerField()
+    gag_id = models.TextField()
     word = models.ForeignKey(Word)
     expl = models.ForeignKey(Explain)
     score = models.FloatField()
+
+class User(models.Model):
+    id = models.IntegerField(primary_key=True)
+
+class Queried(models.Model):
+    user = models.ForeignKey(User)
+    gag_id = models.TextField()
+    word = models.ForeignKey(Word)
 
 class Log(models.Model):
     LOG_ENTER_WORD = 'EN'
@@ -46,3 +56,4 @@ class Log(models.Model):
 
     log_type = models.CharField(max_length=2, choices=LOG_TYPE_CHOICES)
     timestamp = models.DateTimeField()
+

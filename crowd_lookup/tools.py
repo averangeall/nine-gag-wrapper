@@ -1,7 +1,12 @@
 import json
+import models
 
 def _check_valid(gag_id, user_id, valid_key):
     if gag_id == '' or user_id == '' or valid_key == '':
+        return False
+    try:
+        models.User.objects.get(id=user_id)
+    except:
         return False
     # TODO: make the validation working
     return valid_key == 'hello'
