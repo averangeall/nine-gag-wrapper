@@ -6,6 +6,7 @@ from django.conf.urls import patterns, include, url
 
 urlpatterns = patterns('',
     url(r'^$', 'crowd_lookup.views.index'),
+    url(r'^test/$', 'crowd_lookup.views.test'),
 
     url(r'^lookup/recomm/get/$', 'crowd_lookup.views.get_recomm'),
     url(r'^lookup/recomm/delete/$', 'crowd_lookup.views.delete_recomm'),

@@ -2,6 +2,7 @@
 
 from django.http import HttpResponse
 from django.shortcuts import render_to_response
+import models
 from dictionary import NineDict
 from logger import Logger
 from tools import get_basic_info, make_json_respond
@@ -28,6 +29,11 @@ def index(request):
         urls.append(('delete recomm: %s' % word_id,
                      '/lookup/recomm/delete/?gag_id=%s&user_id=%d&valid_key=hello&word_id=%s' % (gag_id, user_id, word_id)))
     return render_to_response('index.html', {'gag_id': gag_id, 'urls': urls})
+
+def test(request):
+    word = mgr.word.get(word_str='sss')
+    recomm = models.Recomm.objects.filter(gag_id=u'ajYbzzx', word=word)
+    return HttpResponse(make_json_respond('OKAY', len(recomm)))
 
 def get_recomm(request):
     gag_id, user, user_ip, is_valid = get_basic_info(request)
