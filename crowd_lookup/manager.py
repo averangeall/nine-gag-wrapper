@@ -48,7 +48,7 @@ class RecommMgr(Manager):
         record = self._get_record(word, gag_id, user)
         if self._went_to(record, models.RecommRecord.VAL_POSITIVE):
             return
-        recomm = self.get(word, gag_id)
+        recomm = self.get(gag_id, word)
         if not recomm:
             recomm = self._create(word, gag_id)
         self._change_score(recomm, +1.0)

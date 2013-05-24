@@ -31,9 +31,10 @@ def index(request):
     return render_to_response('index.html', {'gag_id': gag_id, 'urls': urls})
 
 def test(request):
+    gag_id, user, user_ip, is_valid = get_basic_info(request)
     word = mgr.word.get(word_str='sss')
-    recomm = models.Recomm.objects.filter(gag_id=u'ajYbzzx', word=word)
-    return HttpResponse(make_json_respond('OKAY', len(recomm)))
+    recomm = mgr.recomm.get(gag_id=gag_id, word=word)
+    return HttpResponse(make_json_respond('OKAY', recomm.id))
 
 def get_recomm(request):
     gag_id, user, user_ip, is_valid = get_basic_info(request)
