@@ -42,12 +42,12 @@ def get_recomm(request):
         log.put(gag_id, user, user_ip, 'GET_RECOMM', False, 'key invalid')
         return HttpResponse(make_json_respond('INVALID'))
 
-    recomm = dictt.get_recomm(gag_id, user)
-    if recomm == None:
+    recomms = dictt.get_recomm(gag_id, user)
+    if recomms == None:
         log.put(gag_id, user, user_ip, 'GET_RECOMM', True, 'something went wrong')
         return HttpResponse(make_json_respond('FAIL'))
-    log.put(gag_id, user, user_ip, 'GET_RECOMM', True, 'got %d recomm' % len(recomm))
-    return HttpResponse(make_json_respond('OKAY', recomm))
+    log.put(gag_id, user, user_ip, 'GET_RECOMM', True, 'got %d recomms' % len(recomms))
+    return HttpResponse(make_json_respond('OKAY', recomms))
 
 def delete_recomm(request):
     gag_id, user, user_ip, is_valid = get_basic_info(request)

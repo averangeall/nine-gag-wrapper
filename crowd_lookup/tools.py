@@ -3,7 +3,7 @@ import models
 from manager import UserMgr
 
 def _check_valid(gag_id, user, valid_key):
-    if gag_id == None or user == None or valid_key == None:
+    if gag_id in [None, ''] or user  == None:
         return False
     # TODO: make the validation working
     return valid_key == 'hello'

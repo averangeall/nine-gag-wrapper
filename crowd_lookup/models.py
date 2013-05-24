@@ -60,8 +60,7 @@ class RecommRecord(models.Model):
     )
 
     user = models.ForeignKey(User)
-    gag_id = models.TextField()
-    word = models.ForeignKey(Word)
+    recomm = models.ForeignKey(Recomm)
     val_type = models.CharField(max_length=2, choices=VAL_TYPE_CHOICES)
 
 class Log(models.Model):
