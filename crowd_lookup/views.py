@@ -17,6 +17,7 @@ def index(request):
     user_id = 84920
     word_str = request.GET.get('word_str', '')
     word_id = request.GET.get('word_id', None)
+    expl_id = request.GET.get('expl_id', None)
     urls = []
     urls.append(('get recomm', 
                  '/lookup/recomm/get/?gag_id=%s&user_id=%d&valid_key=hello' % (gag_id, user_id)))
@@ -28,6 +29,9 @@ def index(request):
                      '/lookup/explain/query/?gag_id=%s&user_id=%d&valid_key=hello&word_id=%s' % (gag_id, user_id, word_id)))
         urls.append(('delete recomm: %s' % word_id,
                      '/lookup/recomm/delete/?gag_id=%s&user_id=%d&valid_key=hello&word_id=%s' % (gag_id, user_id, word_id)))
+        if expl_id:
+            urls.append(('delete explain: %s' % word_id,
+                         '/lookup/explain/delete/?gag_id=%s&user_id=%d&valid_key=hello&word_id=%s&expl_id=%s' % (gag_id, user_id, word_id, expl_id)))
     return render_to_response('index.html', {'gag_id': gag_id, 'urls': urls})
 
 def test(request):
