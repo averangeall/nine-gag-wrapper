@@ -43,7 +43,6 @@ class Explain(models.Model):
         return res
 
 class Prefer(models.Model):
-    gag_id = models.TextField()
     word = models.ForeignKey(Word)
     expl = models.ForeignKey(Explain)
     score = models.FloatField()
@@ -61,6 +60,19 @@ class RecommRecord(models.Model):
 
     user = models.ForeignKey(User)
     recomm = models.ForeignKey(Recomm)
+    val_type = models.CharField(max_length=2, choices=VAL_TYPE_CHOICES)
+
+class PreferRecord(models.Model):
+    VAL_POSITIVE = 'PO'
+    VAL_NEGATIVE = 'NE'
+    VAL_TYPE_CHOICES = (
+        (VAL_POSITIVE, 'positive'),
+        (VAL_NEGATIVE, 'negative'),
+    )
+
+    user = models.ForeignKey(User)
+    gag_id = models.TextField()
+    prefer = models.ForeignKey(Prefer)
     val_type = models.CharField(max_length=2, choices=VAL_TYPE_CHOICES)
 
 class Log(models.Model):

@@ -21,39 +21,30 @@ class NineDict:
         return self._mgr.recomm.going_down(word, gag_id, user)
 
     def get_expls(self, word, gag_id, user):
-        expls = []
-        expls += self._get_expls_in_database(word, gag_id, user)
-        if not expls:
-            expls += self._get_expls_from_web(word, gag_id)
+        if not self._mgr.prefer.has_any(word, gag_id, user):
+            self._get_expls_from_web(word, gag_id)
+        expls = self._mgr.prefer.query(word, gag_id, user)
         self._mgr.recomm.going_up(word, gag_id, user)
-        return expls
+        return tools._make_dicts(expls)
 
     def delete_expl(self, expl, word, gag_id, user):
+        self._mgr.prefer.going_down(expl, gag_id, user)
         return True
 
     def add_expl(self, expl, word, gag_id, user):
         return True
 
-    def _get_expls_in_database(self, word, gag_id, user):
-        expls = self._mgr.explain.query(word, gag_id, user)
-        return tools._make_dicts(expls)
-
     def _get_expls_from_web(self, word, gag_id):
-        expls = []
-        #expls += self._get_expls_from_browser(word, self._dr_eye)
-        expls += self._get_expls_from_browser(word, self._google_image)
-        return tools._make_dicts(expls)
+        #self._get_expls_from_browser(word, self._dr_eye)
+        self._get_expls_from_browser(word, self._google_image)
 
     def _get_expls_from_browser(self, word, br):
         expl_tuples = br.query(word.content)
-        expls = []
         for expl_str, expl_url, expl_repr_type in expl_tuples:
-            expl = models.Explain(word=word,
+            self._mgr.explain.add(word=word,
                                   repr_type=expl_repr_type,
-                                  content=expl_str,
+                                  expl_str=expl_str,
                                   source=br.get_name(),
-                                  link=expl_url)
-            expl.save()
-            expls.append(expl)
-        return expls
+                                  link=expl_url
+                                 )
 

@@ -111,43 +111,58 @@ class RecommMgr(Manager):
         record.save()
 
 class ExplainMgr(Manager):
-    def get(self, **kwargs):
-        if 'expl_str' in kwargs and 'word' in kwargs:
-            return self._get_by_str(kwargs['expl_str'], kwargs['word'])
-        elif 'expl_id' in kwargs:
-            return self._get_by_id(kwargs['expl_id'])
-        assert False
+    def get(self, expl_id):
+        try:
+            return models.Explain.objects.get(id=expl_id)
+        except:
+            return None
 
-    def _get_by_str(self, expl_str, word):
+    def add(self, **kwargs):
+        assert 'expl_str' in kwargs and 'word' in kwargs
+        expl_str = kwargs['expl_str']
+        word = kwargs['word']
         #expl_str = tools.normalize_str(expl_str)
         if expl_str == '':
             return None
         expls = models.Explain.objects.filter(content=expl_str, word=word)
         if not expls:
+            repr_type = kwargs['repr_type'] if 'repr_type' in kwargs else self._guess_repr_type(expl_str)
+            source = kwargs['source'] if 'source' in kwargs else 'User Provide'
+            link = kwargs['link'] if 'link' in kwargs else ''
             expl = models.Explain(word=word,
-                                  repr_type=self._guess_repr_type(expl_str),
+                                  repr_type=repr_type,
                                   content=expl_str,
-                                  source='User Provide',
-                                  link='')
+                                  source=source,
+                                  link=link)
             expl.save()
         else:
             assert len(expls) == 1
             expl = expls[0]
         return expl
 
-    def _get_by_id(self, expl_id):
-        try:
-            return models.Explain.objects.get(id=expl_id)
-        except:
-            return None
-
     def _guess_repr_type(self, expl_str):
         # TODO: guess the representation type of the user given explain
         return models.Explain.REPR_TEXT
 
-    def query(self, word, gag_id, user):
+class PreferMgr(Manager):
+    def get(self, word, expl):
+        return None
+
+    def has_any(self, word, gag_id, user):
         expls = models.Explain.objects.filter(word=word)
-        return expls
+        prefers = models.Prefer.objects.filter(word=word, score__lt=-1.0)
+        if not expls:
+            return False
+        remain = set(expls) - set([prefer.expl for prefer in prefers])
+        if not remain:
+            return False
+        return True
+
+    def query(self, word, gag_id, user):
+        return []
+
+    def going_down(self, word, gag_id, user):
+        return True
 
 class UserMgr(Manager):
     def get(self, user_id):
@@ -159,7 +174,8 @@ class UserMgr(Manager):
 class AllManagers:
     def __init__(self):
         self.word = WordMgr()
-        self.recomm = RecommMgr()
         self.explain = ExplainMgr()
+        self.recomm = RecommMgr()
+        self.prefer = PreferMgr()
         self.user = UserMgr()
 

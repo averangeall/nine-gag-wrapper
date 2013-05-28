@@ -109,7 +109,7 @@ def provide_explain(request):
     expl_str = request.GET.get('expl_str', '')
 
     word = mgr.word.get(word_id=word_id)
-    expl = mgr.explain.get(expl_str=expl_str, word=word)
+    expl = mgr.explain.add(expl_str=expl_str, word=word)
 
     success = dictt.add_expl(expl, word, gag_id, user)
     if not success:
