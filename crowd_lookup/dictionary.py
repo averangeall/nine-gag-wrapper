@@ -21,13 +21,14 @@ class NineDict:
         return self._mgr.recomm.going_down(word, gag_id, user)
 
     def get_expls(self, word, gag_id, user):
-        if not self._mgr.prefer.has_any(word, gag_id, user):
-            self._get_expls_from_web(word, gag_id)
         expls = self._mgr.prefer.query(word, gag_id, user)
+        if not expls:
+            self._get_expls_from_web(word, gag_id)
+            expls = self._mgr.prefer.query(word, gag_id, user)
         self._mgr.recomm.going_up(word, gag_id, user)
         return tools._make_dicts(expls)
 
-    def delete_expl(self, expl, word, gag_id, user):
+    def delete_expl(self, expl, gag_id, user):
         self._mgr.prefer.going_down(expl, gag_id, user)
         return True
 

@@ -1,3 +1,4 @@
+import random
 import models
 #import tools
 
@@ -145,24 +146,48 @@ class ExplainMgr(Manager):
         return models.Explain.REPR_TEXT
 
 class PreferMgr(Manager):
-    def get(self, word, expl):
-        return None
-
-    def has_any(self, word, gag_id, user):
-        expls = models.Explain.objects.filter(word=word)
-        prefers = models.Prefer.objects.filter(word=word, score__lt=-1.0)
-        if not expls:
-            return False
-        remain = set(expls) - set([prefer.expl for prefer in prefers])
-        if not remain:
-            return False
-        return True
+    def get(self, expl):
+        try:
+            return models.Prefer.objects.get(expl=expl)
+        except:
+            return None
 
     def query(self, word, gag_id, user):
-        return []
+        expls = models.Explain.objects.filter(word=word)
+        prefers = models.Prefer.objects.filter(expl__word=word, score__lt=-1.0)
+        records = models.PreferRecord.objects.filter(prefer__expl__word=word, 
+                                                     user=user, 
+                                                     val_type=models.PreferRecord.VAL_NEGATIVE)
+        if not expls:
+            return []
+        remain = set(expls) - set([prefer.expl for prefer in prefers])
+        if not remain:
+            return []
+        remain -= set([record.prefer.expl for record in records])
+        random.seed(user.id)
+        num_choose = 3
+        if len(remain) < num_choose:
+            return remain
+        return random.sample(remain, num_choose)
 
-    def going_down(self, word, gag_id, user):
+    def going_down(self, expl, gag_id, user):
+        prefer = self.get(expl)
+        record = self._get_record(prefer, gag_id, user)
+        if self._went_to(record, models.PreferRecord.VAL_NEGATIVE):
+            return False
+        if not prefer:
+            return False
+        self._change_score(prefer, -1.0)
+        self._leave_record(record, prefer, gag_id, user, models.PreferRecord.VAL_NEGATIVE)
         return True
+
+    def _get_record(self, prefer, gag_id, user):
+        records = models.PreferRecord.objects.filter(prefer=prefer, gag_id=gag_id, user=user)
+        if not records:
+            return None
+        assert len(records) == 1
+        record = records[0]
+        return record
 
 class UserMgr(Manager):
     def get(self, user_id):

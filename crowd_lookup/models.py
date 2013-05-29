@@ -43,9 +43,11 @@ class Explain(models.Model):
         return res
 
 class Prefer(models.Model):
-    word = models.ForeignKey(Word)
     expl = models.ForeignKey(Explain)
     score = models.FloatField()
+
+    def to_dict(self):
+        return self.expl.to_dict()
 
 class User(models.Model):
     id = models.IntegerField(primary_key=True)
