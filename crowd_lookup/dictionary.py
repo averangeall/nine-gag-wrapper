@@ -29,8 +29,7 @@ class NineDict:
         return tools._make_dicts(expls)
 
     def delete_expl(self, expl, gag_id, user):
-        self._mgr.prefer.going_down(expl, gag_id, user)
-        return True
+        return self._mgr.prefer.going_down(expl, gag_id, user)
 
     def add_expl(self, expl, word, gag_id, user):
         return True

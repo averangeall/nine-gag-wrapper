@@ -176,7 +176,7 @@ class PreferMgr(Manager):
         if self._went_to(record, models.PreferRecord.VAL_NEGATIVE):
             return False
         if not prefer:
-            return False
+            prefer = self._create(expl)
         self._change_score(prefer, -1.0)
         self._leave_record(record, prefer, gag_id, user, models.PreferRecord.VAL_NEGATIVE)
         return True
@@ -188,6 +188,29 @@ class PreferMgr(Manager):
         assert len(records) == 1
         record = records[0]
         return record
+
+    def _went_to(self, record, valence):
+        if record == None:
+            return False
+        return record.val_type == valence
+
+    def _create(self, expl):
+        prefer = models.Prefer(expl=expl, score=0.0)
+        prefer.save()
+        return prefer
+
+    def _change_score(self, prefer, score_delta):
+        assert prefer
+        prefer.score += score_delta
+        prefer.save()
+        
+    def _leave_record(self, record, prefer, gag_id, user, valence):
+        if record:
+            record.val_type = valence
+        else:
+            assert prefer
+            record = models.PreferRecord(user=user, gag_id=gag_id, prefer=prefer, val_type=valence)
+        record.save()
 
 class UserMgr(Manager):
     def get(self, user_id):

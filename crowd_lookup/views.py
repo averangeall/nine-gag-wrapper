@@ -31,7 +31,7 @@ def index(request):
                      '/lookup/recomm/delete/?gag_id=%s&user_id=%d&valid_key=hello&word_id=%s' % (gag_id, user_id, word_id)))
         if expl_id:
             urls.append(('delete explain: %s' % word_id,
-                         '/lookup/explain/delete/?gag_id=%s&user_id=%d&valid_key=hello&word_id=%s&expl_id=%s' % (gag_id, user_id, word_id, expl_id)))
+                         '/lookup/explain/delete/?gag_id=%s&user_id=%d&valid_key=hello&expl_id=%s' % (gag_id, user_id, expl_id)))
     dictt = {}
     dictt['gag_id'] = gag_id
     dictt['urls'] = urls
@@ -95,13 +95,11 @@ def delete_explain(request):
     if not is_valid:
         return HttpResponse(make_json_respond('INVALID'))
 
-    word_id = request.GET.get('word_id', None)
     expl_id = request.GET.get('expl_id', None)
 
-    word = mgr.word.get(word_id=word_id)
     expl = mgr.explain.get(expl_id=expl_id)
 
-    success = dictt.delete_expl(expl, word, gag_id, user)
+    success = dictt.delete_expl(expl, gag_id, user)
     if not success:
         return HttpResponse(make_json_respond('FAIL'))
     return HttpResponse(make_json_respond('OKAY'))
