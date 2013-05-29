@@ -32,7 +32,13 @@ def index(request):
         if expl_id:
             urls.append(('delete explain: %s' % word_id,
                          '/lookup/explain/delete/?gag_id=%s&user_id=%d&valid_key=hello&word_id=%s&expl_id=%s' % (gag_id, user_id, word_id, expl_id)))
-    return render_to_response('index.html', {'gag_id': gag_id, 'urls': urls})
+    dictt = {}
+    dictt['gag_id'] = gag_id
+    dictt['urls'] = urls
+    dictt['word_str'] = word_str
+    dictt['word_id'] = word_id if word_id is not None else ''
+    dictt['expl_id'] = expl_id if expl_id is not None else ''
+    return render_to_response('index.html', dictt)
 
 def test(request):
     gag_id = 'ajYbzzx'
