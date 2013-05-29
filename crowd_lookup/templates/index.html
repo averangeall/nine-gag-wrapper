@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>9GAG Lookup Testing</title>
+    </head>
+
+    <body>
+        <p>gag_id: {{ gag_id }}</p>
+        <form>
+            word_str: <input type="text" name="word_str" value="{{ word_str }}" /><br />
+            word_id: <input type="text" name="word_id" value="{{ word_id }}" /><br />
+            expl_id: <input type="text" name="expl_id" value="{{ expl_id }}" /><br />
+            expl_str: <input type="text" name="expl_str" value="{{ expl_str }}" /><br />
+            <input type="submit" /><br />
+        </form>
+        <p />
+        {% for url in urls %}
+            <a href="{{ url.1 }}">{{ url.0 }}</a><br />
+        {% endfor %}
+    </body>
+
+    <script>
+    </script>
+</html>
+
+

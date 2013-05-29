@@ -1,66 +1,47 @@
-import browser
 import models
+import browser
+import tools
+from manager import AllManagers
 
 class NineDict:
     def __init__(self):
         self._dr_eye = browser.DrEye()
         self._google_image = browser.GoogleImage()
 
-    def get_recomm(self, gag_id):
-        gag_id = int(gag_id)
-        recomms = models.Recomm.objects.filter(gag_id=gag_id)
-        words = [recomm.word.content for recomm in recomms]
-        return words
+        self._mgr = AllManagers()
 
-    def get_defis(self, text, gag_id):
-        defis = []
-        defis += self._get_defis_in_database(text, gag_id)
-        if len(defis) == 0:
-            defis += self._get_defis_from_web(text, gag_id)
-        return defis
+    def get_recomm(self, gag_id, user):
+        recomms = set()
+        recomms |= set(self._mgr.recomm.query(gag_id))
+        recomms |= set(self._mgr.recomm.query(gag_id, user=user, valence=models.RecommRecord.VAL_POSITIVE))
+        recomms -= set(self._mgr.recomm.query(gag_id, user=user, valence=models.RecommRecord.VAL_NEGATIVE))
+        return tools._make_dicts(recomms)
 
-    def _get_word(self, text):
-        words = models.Word.objects.filter(content=text)
-        if len(words) == 0:
-            new = models.Word(content=text)
-            new.save()
-            return new
-        else:
-            assert len(words) == 1
-            return words[0]
+    def delete_recomm(self, word, gag_id, user):
+        return self._mgr.recomm.going_down(word, gag_id, user)
 
-    def _get_defis_in_database(self, text, gag_id):
-        word = self._get_word(text)
-        expls = models.Explain.objects.filter(word=word)
-        return [expl.to_dict() for expl in expls[:5]]
+    def get_expls(self, word, gag_id, user):
+        expls = self._mgr.prefer.query(word, gag_id, user)
+        if not expls:
+            self._get_expls_from_web(word, gag_id)
+            expls = self._mgr.prefer.query(word, gag_id, user)
+        self._mgr.recomm.going_up(word, gag_id, user)
+        return tools._make_dicts(expls)
 
-    def _get_defis_from_web(self, text, gag_id):
-        defis = []
-        defis += self._get_defis_from_dr_eye(text)
-        defis += self._get_defis_from_google_image(text)
-        return defis
+    def delete_expl(self, expl, gag_id, user):
+        return self._mgr.prefer.going_down(expl, gag_id, user)
 
-    def _get_defis_from_dr_eye(self, text):
-        url, defis = self._dr_eye.query(text)
-        word = self._get_word(text)
-        expls = [models.Explain(word=word, 
-                                repr_type=models.Explain.REPR_TEXT, 
-                                content=defi, 
-                                source='Dr. Eye', 
-                                link=url) for defi in defis]
-        for expl in expls:
-            expl.save()
-        return [expl.to_dict() for expl in expls[:2]]
+    def _get_expls_from_web(self, word, gag_id):
+        #self._get_expls_from_browser(word, self._dr_eye)
+        self._get_expls_from_browser(word, self._google_image)
 
-    def _get_defis_from_google_image(self, text):
-        url, defis = self._google_image.query(text)
-        word = self._get_word(text)
-        expls = [models.Explain(word=word, 
-                                repr_type=models.Explain.REPR_IMAGE, 
-                                content=defi, 
-                                source='Google Image', 
-                                link=url) for defi in defis]
-        for expl in expls:
-            expl.save()
-        return [expl.to_dict() for expl in expls[:2]]
+    def _get_expls_from_browser(self, word, br):
+        expl_tuples = br.query(word.content)
+        for expl_str, expl_url, expl_repr_type in expl_tuples:
+            self._mgr.explain.add(word=word,
+                                  repr_type=expl_repr_type,
+                                  expl_str=expl_str,
+                                  source=br.get_name(),
+                                  link=expl_url
+                                 )
 

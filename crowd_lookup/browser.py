@@ -5,6 +5,7 @@ import time
 import mechanize
 import cookielib
 from BeautifulSoup import BeautifulSoup
+import models
 
 class BaseBrowser:
     def __init__(self):
@@ -51,6 +52,9 @@ class BaseBrowser:
         soup = BeautifulSoup(content)
         return soup
 
+    def get_name(self):
+        return ''
+
 class DrEye(BaseBrowser):
     def query(self, word):
         url = 'http://dict.dreye.com/ews/%s--01--.html' % word.lower()
@@ -71,6 +75,9 @@ class DrEye(BaseBrowser):
             raise
         return url, res
 
+    def get_name(self):
+        return 'Dr. Eye'
+
 class GoogleImage(BaseBrowser):
     def query(self, word):
         url = 'https://www.google.com.tw/search?um=1&hl=zh-TW&biw=1366&bih=682&tbm=isch&q=%s&oq=%s' % (word.lower(), word.lower())
@@ -78,10 +85,15 @@ class GoogleImage(BaseBrowser):
         res = []
         try:
             content = str(soup)
-            res += re.findall(r'imgurl=(.+?)&amp', content)
+            imgs = re.findall(r'imgurl=(.+?)&amp', content)
+            for img in imgs:
+                res.append((img, url, models.Explain.REPR_IMAGE))
         except:
             raise
-        return url, res
+        return res
+
+    def get_name(self):
+        return 'Google Image'
 
 if __name__ == '__main__':
     br = GoogleImage()
