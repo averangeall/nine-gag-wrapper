@@ -18,7 +18,7 @@ class WordMgr(Manager):
         if word_str == '':
             return None
         words = models.Word.objects.filter(content=word_str)
-        if not words:
+        if not words.count():
             word = models.Word(content=word_str)
             word.save()
         else:
@@ -35,7 +35,7 @@ class WordMgr(Manager):
 class RecommMgr(Manager):
     def get(self, gag_id, word):
         recomms = models.Recomm.objects.filter(gag_id=gag_id, word=word)
-        if not recomms:
+        if not recomms.count():
             return None
         assert len(recomms) == 1
         recomm = recomms[0]
@@ -82,7 +82,7 @@ class RecommMgr(Manager):
 
     def _get_record(self, user, recomm):
         records = models.RecommRecord.objects.filter(user=user, recomm=recomm)
-        if not records:
+        if not records.count():
             return None
         assert len(records) == 1
         record = records[0]
@@ -126,7 +126,7 @@ class ExplainMgr(Manager):
         if expl_str == '':
             return None
         expls = models.Explain.objects.filter(content=expl_str, word=word)
-        if not expls:
+        if not expls.count():
             repr_type = kwargs['repr_type'] if 'repr_type' in kwargs else self._guess_repr_type(expl_str)
             source = kwargs['source'] if 'source' in kwargs else 'User Provide'
             link = kwargs['link'] if 'link' in kwargs else ''
@@ -158,7 +158,7 @@ class PreferMgr(Manager):
         records = models.PreferRecord.objects.filter(prefer__expl__word=word, 
                                                      user=user, 
                                                      val_type=models.PreferRecord.VAL_NEGATIVE)
-        if not expls:
+        if not expls.count():
             return []
         remain = set(expls) - set([prefer.expl for prefer in prefers])
         if not remain:
@@ -183,7 +183,7 @@ class PreferMgr(Manager):
 
     def _get_record(self, prefer, gag_id, user):
         records = models.PreferRecord.objects.filter(prefer=prefer, gag_id=gag_id, user=user)
-        if not records:
+        if not records.count():
             return None
         assert len(records) == 1
         record = records[0]
