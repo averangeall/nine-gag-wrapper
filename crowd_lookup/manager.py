@@ -123,7 +123,7 @@ class ExplainMgr(Manager):
         expl_str = kwargs['expl_str']
         word = kwargs['word']
         #expl_str = tools.normalize_str(expl_str)
-        if expl_str == '':
+        if word == None or expl_str == '':
             return None
         expls = models.Explain.objects.filter(content=expl_str, word=word)
         if not expls.count():

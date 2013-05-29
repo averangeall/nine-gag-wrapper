@@ -18,6 +18,7 @@ def index(request):
     word_str = request.GET.get('word_str', '')
     word_id = request.GET.get('word_id', None)
     expl_id = request.GET.get('expl_id', None)
+    expl_str = request.GET.get('expl_str', '')
     urls = []
     urls.append(('get recomm', 
                  '/lookup/recomm/get/?gag_id=%s&user_id=%d&valid_key=hello' % (gag_id, user_id)))
@@ -32,12 +33,16 @@ def index(request):
         if expl_id:
             urls.append(('delete explain: %s' % expl_id,
                          '/lookup/explain/delete/?gag_id=%s&user_id=%d&valid_key=hello&expl_id=%s' % (gag_id, user_id, expl_id)))
+        if expl_str != '':
+            urls.append(('provide explain: %s, %s' % (word_id, expl_str),
+                         '/lookup/explain/provide/?gag_id=%s&user_id=%d&valid_key=hello&word_id=%s&expl_str=%s' % (gag_id, user_id, word_id, expl_str)))
     dictt = {}
     dictt['gag_id'] = gag_id
     dictt['urls'] = urls
     dictt['word_str'] = word_str
     dictt['word_id'] = word_id if word_id is not None else ''
     dictt['expl_id'] = expl_id if expl_id is not None else ''
+    dictt['expl_str'] = expl_str
     return render_to_response('index.html', dictt)
 
 def test(request):
@@ -115,7 +120,7 @@ def provide_explain(request):
     word = mgr.word.get(word_id=word_id)
     expl = mgr.explain.add(expl_str=expl_str, word=word)
 
-    success = dictt.add_expl(expl, word, gag_id, user)
+    success = expl is not None
     if not success:
         return HttpResponse(make_json_respond('FAIL'))
     return HttpResponse(make_json_respond('OKAY'))

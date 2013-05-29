@@ -31,9 +31,6 @@ class NineDict:
     def delete_expl(self, expl, gag_id, user):
         return self._mgr.prefer.going_down(expl, gag_id, user)
 
-    def add_expl(self, expl, word, gag_id, user):
-        return True
-
     def _get_expls_from_web(self, word, gag_id):
         #self._get_expls_from_browser(word, self._dr_eye)
         self._get_expls_from_browser(word, self._google_image)
