@@ -30,7 +30,7 @@ def index(request):
         urls.append(('delete recomm: %s' % word_id,
                      '/lookup/recomm/delete/?gag_id=%s&user_id=%d&valid_key=hello&word_id=%s' % (gag_id, user_id, word_id)))
         if expl_id:
-            urls.append(('delete explain: %s' % word_id,
+            urls.append(('delete explain: %s' % expl_id,
                          '/lookup/explain/delete/?gag_id=%s&user_id=%d&valid_key=hello&expl_id=%s' % (gag_id, user_id, expl_id)))
     dictt = {}
     dictt['gag_id'] = gag_id
