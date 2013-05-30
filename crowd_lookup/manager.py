@@ -1,4 +1,3 @@
-import random
 import models
 #import tools
 
@@ -119,14 +118,18 @@ class ExplainMgr(Manager):
             return None
 
     def add(self, **kwargs):
-        assert 'expl_str' in kwargs and 'word' in kwargs
+        assert 'expl_str' in kwargs and 'word' in kwargs and 'init_score' in kwargs
         expl_str = kwargs['expl_str']
         word = kwargs['word']
+        init_score = kwargs['init_score']
         #expl_str = tools.normalize_str(expl_str)
         if word == None or expl_str == '':
             return None
         expls = models.Explain.objects.filter(content=expl_str, word=word)
-        if not expls.count():
+        if expls.count():
+            assert len(expls) == 1
+            expl = expls[0]
+        else:
             repr_type = kwargs['repr_type'] if 'repr_type' in kwargs else self._guess_repr_type(expl_str)
             source = kwargs['source'] if 'source' in kwargs else 'User Provide'
             link = kwargs['link'] if 'link' in kwargs else ''
@@ -136,9 +139,8 @@ class ExplainMgr(Manager):
                                   source=source,
                                   link=link)
             expl.save()
-        else:
-            assert len(expls) == 1
-            expl = expls[0]
+            prefer = models.Prefer(expl=expl, score=init_score)
+            prefer.save()
         return expl
 
     def _guess_repr_type(self, expl_str):
@@ -153,22 +155,17 @@ class PreferMgr(Manager):
             return None
 
     def query(self, word, gag_id, user):
-        expls = models.Explain.objects.filter(word=word)
-        prefers = models.Prefer.objects.filter(expl__word=word, score__lt=-1.0)
-        records = models.PreferRecord.objects.filter(prefer__expl__word=word, 
-                                                     user=user, 
-                                                     val_type=models.PreferRecord.VAL_NEGATIVE)
-        if not expls.count():
-            return []
-        remain = set(expls) - set([prefer.expl for prefer in prefers])
-        if not remain:
-            return []
-        remain -= set([record.prefer.expl for record in records])
-        random.seed(user.id)
-        num_choose = 3
-        if len(remain) < num_choose:
-            return remain
-        return random.sample(remain, num_choose)
+        all_prefers = models.Prefer.objects.filter(expl__word=word, score__gt=0.0).order_by('-score')
+        positive_records = models.PreferRecord.objects.filter(prefer__expl__word=word, user=user, val_type=models.PreferRecord.VAL_POSITIVE)
+        negative_records = models.PreferRecord.objects.filter(prefer__expl__word=word, user=user, val_type=models.PreferRecord.VAL_NEGATIVE)
+        positive_prefers = [record.prefer for record in positive_records]
+        negative_prefers = [record.prefer for record in negative_records]
+        good_prefers = []
+        good_prefers += positive_prefers
+        for prefer in all_prefers:
+            if prefer not in negative_records:
+                good_prefers.append(prefer)
+        return [prefer.expl for prefer in good_prefers][:5]
 
     def going_down(self, expl, gag_id, user):
         prefer = self.get(expl)

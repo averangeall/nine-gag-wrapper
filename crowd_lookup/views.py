@@ -118,7 +118,7 @@ def provide_explain(request):
     expl_str = request.GET.get('expl_str', '')
 
     word = mgr.word.get(word_id=word_id)
-    expl = mgr.explain.add(expl_str=expl_str, word=word)
+    expl = mgr.explain.add(expl_str=expl_str, word=word, init_score=1.0)
 
     success = expl is not None
     if not success:
