@@ -62,7 +62,7 @@ class DrEye(BaseBrowser):
         res = []
         try:
             defis = soup.find('div', {'id': 'infotab1'}) \
-                             .find('div', {'class': 'dict_cont'})
+                        .find('div', {'class': 'dict_cont'})
             for defi in defis:
                 if 'attrs' in dir(defi) and dict(defi.attrs)[u'class'] == 'default':
                     for content in defi.contents:
@@ -94,6 +94,32 @@ class GoogleImage(BaseBrowser):
 
     def get_name(self):
         return 'Google Image'
+
+class GoogleTranslate(BaseBrowser):
+    def query(self, word):
+        used_url = 'http://translate.google.com/'
+        self._br.open(used_url)
+        self._br.select_form(name='text_form')
+        self._br['text'] = word
+        self._br['sl'] = ['en']
+        self._br['tl'] = ['zh-TW']
+        response = self._br.submit()
+        content = response.read()
+        content = self._remove_script_tag(content)
+        soup = BeautifulSoup(content)
+        res = []
+        try:
+            texts = soup.find('span', {'id': 'result_box'}) \
+                        .find('span')
+            assert texts
+            fancy_url = 'http://translate.google.com/#en/zh-TW/%s' % word
+            res.append((texts.string, fancy_url, models.Explain.REPR_TEXT))
+        except:
+            raise
+        return res
+
+    def get_name(self):
+        return 'Google Translate'
 
 if __name__ == '__main__':
     br = GoogleImage()

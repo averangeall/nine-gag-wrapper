@@ -5,7 +5,7 @@ from manager import AllManagers
 
 class NineDict:
     def __init__(self):
-        self._dr_eye = browser.DrEye()
+        self._google_translate = browser.GoogleTranslate()
         self._google_image = browser.GoogleImage()
 
         self._mgr = AllManagers()
@@ -35,7 +35,7 @@ class NineDict:
         return self._mgr.prefer.going_up(expl, gag_id, user)
 
     def _get_expls_from_web(self, word, gag_id):
-        #self._get_expls_from_browser(word, self._dr_eye)
+        self._get_expls_from_browser(word, self._google_translate)
         self._get_expls_from_browser(word, self._google_image)
 
     def _get_expls_from_browser(self, word, br):
