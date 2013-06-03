@@ -12,6 +12,7 @@ urlpatterns = patterns('',
     url(r'^lookup/recomm/delete/$', 'crowd_lookup.views.delete_recomm'),
     url(r'^lookup/explain/query/$', 'crowd_lookup.views.query_explain'),
     url(r'^lookup/explain/delete/$', 'crowd_lookup.views.delete_explain'),
+    url(r'^lookup/explain/like/$', 'crowd_lookup.views.like_explain'),
     url(r'^lookup/explain/provide/$', 'crowd_lookup.views.provide_explain'),
 
     # Examples:

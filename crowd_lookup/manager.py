@@ -167,6 +167,17 @@ class PreferMgr(Manager):
                 good_prefers.append(prefer)
         return [prefer.expl for prefer in good_prefers][:5]
 
+    def going_up(self, expl, gag_id, user):
+        prefer = self.get(expl)
+        record = self._get_record(prefer, gag_id, user)
+        if self._went_to(record, models.PreferRecord.VAL_POSITIVE):
+            return False
+        if not prefer:
+            prefer = self._create(expl)
+        self._change_score(prefer, +1.0)
+        self._leave_record(record, prefer, gag_id, user, models.PreferRecord.VAL_POSITIVE)
+        return True
+
     def going_down(self, expl, gag_id, user):
         prefer = self.get(expl)
         record = self._get_record(prefer, gag_id, user)

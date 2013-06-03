@@ -33,6 +33,8 @@ def index(request):
         if expl_id:
             urls.append(('delete explain: %s' % expl_id,
                          '/lookup/explain/delete/?gag_id=%s&user_id=%d&valid_key=hello&expl_id=%s' % (gag_id, user_id, expl_id)))
+            urls.append(('like explain: %s' % expl_id,
+                         '/lookup/explain/like/?gag_id=%s&user_id=%d&valid_key=hello&expl_id=%s' % (gag_id, user_id, expl_id)))
         if expl_str != '':
             urls.append(('provide explain: %s, %s' % (word_id, expl_str),
                          '/lookup/explain/provide/?gag_id=%s&user_id=%d&valid_key=hello&word_id=%s&expl_str=%s' % (gag_id, user_id, word_id, expl_str)))
@@ -105,6 +107,20 @@ def delete_explain(request):
     expl = mgr.explain.get(expl_id=expl_id)
 
     success = dictt.delete_expl(expl, gag_id, user)
+    if not success:
+        return HttpResponse(make_json_respond('FAIL'))
+    return HttpResponse(make_json_respond('OKAY'))
+
+def like_explain(request):
+    gag_id, user, user_ip, is_valid = get_basic_info(request)
+    if not is_valid:
+        return HttpResponse(make_json_respond('INVALID'))
+
+    expl_id = request.GET.get('expl_id', None)
+
+    expl = mgr.explain.get(expl_id=expl_id)
+
+    success = dictt.like_expl(expl, gag_id, user)
     if not success:
         return HttpResponse(make_json_respond('FAIL'))
     return HttpResponse(make_json_respond('OKAY'))
