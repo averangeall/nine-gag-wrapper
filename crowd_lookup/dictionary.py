@@ -40,9 +40,9 @@ class NineDict:
 
     def _get_expls_from_browser(self, word, br):
         expl_tuples = br.query(word.content)
-        score_step = 1.0 / len(expl_tuples)
-        init_score = 1.0
+        rank = 1
         for expl_str, expl_url, expl_repr_type in expl_tuples:
+            init_score = 1.0 / rank ** 0.5
             self._mgr.explain.add(word=word,
                                   repr_type=expl_repr_type,
                                   expl_str=expl_str,
@@ -50,5 +50,5 @@ class NineDict:
                                   link=expl_url,
                                   init_score=init_score
                                  )
-            init_score -= score_step
+            rank += 1
 
