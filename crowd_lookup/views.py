@@ -5,7 +5,7 @@ from django.shortcuts import render_to_response
 import models
 from dictionary import NineDict
 from logger import Logger
-from tools import get_basic_info, make_json_respond
+from tools import get_basic_info, make_json_respond, gen_user_info
 from manager import AllManagers
 
 dictt = NineDict()
@@ -20,6 +20,8 @@ def index(request):
     expl_id = request.GET.get('expl_id', None)
     expl_str = request.GET.get('expl_str', '')
     urls = []
+    urls.append(('create user', 
+                 '/lookup/user/new/'))
     urls.append(('get recomm', 
                  '/lookup/recomm/get/?gag_id=%s&user_id=%d&valid_key=hello' % (gag_id, user_id)))
     if word_str != '':
@@ -52,6 +54,22 @@ def test(request):
     word = mgr.word.get(word_id=635)
     recomms = models.Prefer.objects.filter(expl__word=word)
     return HttpResponse(make_json_respond('OKAY', [recomm.to_dict() for recomm in recomms]))
+
+def new_user(request):
+    user_id, user_key = gen_user_info()
+    mgr.user.create(user_id, user_key)
+    return HttpResponse(make_json_respond('OKAY', {'id': user_id, 'key': user_key}))
+
+def rename_user(request):
+    gag_id, user, user_ip, is_valid = get_basic_info(request)
+    if not is_valid:
+        log.put(gag_id, user, user_ip, 'GET_RECOMM', False, 'key invalid')
+        return HttpResponse(make_json_respond('INVALID'))
+
+    new_name = request.GET.get('new_name', '')
+
+    mgr.user.rename(user, new_name)
+    return HttpResponse(make_json_respond('OKAY'))
 
 def get_recomm(request):
     gag_id, user, user_ip, is_valid = get_basic_info(request)

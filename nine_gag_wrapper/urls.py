@@ -8,8 +8,12 @@ urlpatterns = patterns('',
     url(r'^$', 'crowd_lookup.views.index'),
     url(r'^test/$', 'crowd_lookup.views.test'),
 
+    url(r'^lookup/user/new/$', 'crowd_lookup.views.new_user'),
+    url(r'^lookup/user/rename/$', 'crowd_lookup.views.rename_user'),
+
     url(r'^lookup/recomm/get/$', 'crowd_lookup.views.get_recomm'),
     url(r'^lookup/recomm/delete/$', 'crowd_lookup.views.delete_recomm'),
+
     url(r'^lookup/explain/query/$', 'crowd_lookup.views.query_explain'),
     url(r'^lookup/explain/delete/$', 'crowd_lookup.views.delete_explain'),
     url(r'^lookup/explain/like/$', 'crowd_lookup.views.like_explain'),

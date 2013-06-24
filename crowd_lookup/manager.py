@@ -227,6 +227,10 @@ class UserMgr(Manager):
         except:
             return None
 
+    def create(self, user_id, user_key):
+        user = models.User(id=user_id, key=user_key, name=None)
+        user.save()
+
 class AllManagers:
     def __init__(self):
         self.word = WordMgr()

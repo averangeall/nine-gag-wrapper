@@ -51,6 +51,8 @@ class Prefer(models.Model):
 
 class User(models.Model):
     id = models.IntegerField(primary_key=True)
+    key = models.TextField()
+    name = models.TextField()
 
 class RecommRecord(models.Model):
     VAL_POSITIVE = 'PO'

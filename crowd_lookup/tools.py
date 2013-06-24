@@ -1,4 +1,5 @@
 import json
+import random
 import models
 from manager import UserMgr
 
@@ -39,3 +40,18 @@ def normalize_str(self, string):
 def _make_dicts(objs):
     return [obj.to_dict() for obj in objs]
 
+def gen_user_info():
+    user_mgr = UserMgr()
+    while True:
+        user_id = random.randint(1, 2 ** 30)
+        if user_mgr.get(user_id) == None:
+            break
+
+    user_key = ''
+    choices = [chr(i) for i in range(ord('0'), ord('9') + 1)] + \
+              [chr(i) for i in range(ord('A'), ord('Z') + 1)] + \
+              [chr(i) for i in range(ord('a'), ord('z') + 1)]
+    for i in range(32):
+        user_key += random.choice(choices)
+
+    return user_id, user_key
