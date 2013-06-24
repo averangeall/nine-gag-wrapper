@@ -6,8 +6,7 @@ from manager import UserMgr
 def _check_valid(gag_id, user, valid_key):
     if gag_id in [None, ''] or user  == None:
         return False
-    # TODO: make the validation working
-    return valid_key == 'hello'
+    return valid_key == user.key
 
 def _get_client_ip(request):
     x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')

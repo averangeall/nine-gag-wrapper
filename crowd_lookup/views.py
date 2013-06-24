@@ -1,5 +1,6 @@
 # Create your views here.
 
+from urllib import urlencode
 from django.http import HttpResponse
 from django.shortcuts import render_to_response
 import models
@@ -14,32 +15,38 @@ mgr = AllManagers()
 
 def index(request):
     gag_id = 'ajYbzzx'
-    user_id = 84920
+    user_id = 907954370
+    user_key = 'lsopa7KtFmsJWv6UlZ78ZJ0z0Gsk5Qq3'
     word_str = request.GET.get('word_str', '')
     word_id = request.GET.get('word_id', None)
     expl_id = request.GET.get('expl_id', None)
     expl_str = request.GET.get('expl_str', '')
+    default_args = {'gag_id': gag_id, 'user_id': user_id, 'valid_key': user_key}
     urls = []
-    urls.append(('create user', 
+    urls.append(('create user',
                  '/lookup/user/new/'))
-    urls.append(('get recomm', 
-                 '/lookup/recomm/get/?gag_id=%s&user_id=%d&valid_key=hello' % (gag_id, user_id)))
+    urls.append(('get recomm',
+                 '/lookup/recomm/get/?' + urlencode(default_args)))
     if word_str != '':
-        urls.append(('query explain: %s' % word_str, 
-                     '/lookup/explain/query/?gag_id=%s&user_id=%d&valid_key=hello&word_str=%s' % (gag_id, user_id, word_str)))
+        word_str_args = dict(default_args, **{'word_str': word_str})
+        urls.append(('query explain: %s' % word_str,
+                     '/lookup/explain/query/?' + urlencode(word_str_args)))
     if word_id:
+        word_id_args = dict(default_args, **{'word_id': word_id})
         urls.append(('query explain: %s' % word_id,
-                     '/lookup/explain/query/?gag_id=%s&user_id=%d&valid_key=hello&word_id=%s' % (gag_id, user_id, word_id)))
+                     '/lookup/explain/query/?' + urlencode(word_id_args)))
         urls.append(('delete recomm: %s' % word_id,
-                     '/lookup/recomm/delete/?gag_id=%s&user_id=%d&valid_key=hello&word_id=%s' % (gag_id, user_id, word_id)))
+                     '/lookup/recomm/delete/?' + urlencode(word_id_args)))
         if expl_id:
+            expl_id_args = dict(default_args, **{'expl_id': expl_id})
             urls.append(('delete explain: %s' % expl_id,
-                         '/lookup/explain/delete/?gag_id=%s&user_id=%d&valid_key=hello&expl_id=%s' % (gag_id, user_id, expl_id)))
+                         '/lookup/explain/delete/?' + urlencode(expl_id_args)))
             urls.append(('like explain: %s' % expl_id,
-                         '/lookup/explain/like/?gag_id=%s&user_id=%d&valid_key=hello&expl_id=%s' % (gag_id, user_id, expl_id)))
+                         '/lookup/explain/like/?' + urlencode(expl_id_args)))
         if expl_str != '':
+            expl_str_args = dict(word_id_args, **{'expl_str': expl_str})
             urls.append(('provide explain: %s, %s' % (word_id, expl_str),
-                         '/lookup/explain/provide/?gag_id=%s&user_id=%d&valid_key=hello&word_id=%s&expl_str=%s' % (gag_id, user_id, word_id, expl_str)))
+                         '/lookup/explain/provide/?' + urlencode(expl_str_args)))
     dictt = {}
     dictt['gag_id'] = gag_id
     dictt['urls'] = urls
