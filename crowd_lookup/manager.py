@@ -165,7 +165,7 @@ class PreferMgr(Manager):
         for prefer in all_prefers:
             if prefer not in negative_records:
                 good_prefers.append(prefer)
-        return [prefer.expl for prefer in good_prefers][:5]
+        return [prefer.expl for prefer in good_prefers]
 
     def going_up(self, expl, gag_id, user):
         prefer = self.get(expl)

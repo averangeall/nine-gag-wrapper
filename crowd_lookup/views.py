@@ -1,5 +1,6 @@
 # Create your views here.
 
+import re
 from urllib import urlencode
 from django.http import HttpResponse
 from django.shortcuts import render_to_response
@@ -21,6 +22,7 @@ def index(request):
     word_id = request.GET.get('word_id', None)
     expl_id = request.GET.get('expl_id', None)
     expl_str = request.GET.get('expl_str', '')
+    excl_expl_ids = request.GET.get('excl_expl_ids', '')
     default_args = {'gag_id': gag_id, 'user_id': user_id, 'valid_key': user_key}
     urls = []
     urls.append(('create user',
@@ -28,23 +30,27 @@ def index(request):
     urls.append(('get recomm',
                  '/lookup/recomm/get/?' + urlencode(default_args)))
     if word_str != '':
-        word_str_args = dict(default_args, **{'word_str': word_str})
+        word_str_args = dict(default_args, word_str=word_str)
         urls.append(('query explain: %s' % word_str,
                      '/lookup/explain/query/?' + urlencode(word_str_args)))
     if word_id:
-        word_id_args = dict(default_args, **{'word_id': word_id})
+        word_id_args = dict(default_args, word_id=word_id)
         urls.append(('query explain: %s' % word_id,
                      '/lookup/explain/query/?' + urlencode(word_id_args)))
         urls.append(('delete recomm: %s' % word_id,
                      '/lookup/recomm/delete/?' + urlencode(word_id_args)))
+        if excl_expl_ids != '':
+            excl_expl_ids_args = dict(word_id_args, excl_expl_ids=excl_expl_ids)
+            urls.append(('query explain: %s, excludes: %s' % (word_id, excl_expl_ids),
+                         '/lookup/explain/query/?' + urlencode(excl_expl_ids_args)))
         if expl_id:
-            expl_id_args = dict(default_args, **{'expl_id': expl_id})
+            expl_id_args = dict(default_args, expl_id=expl_id)
             urls.append(('delete explain: %s' % expl_id,
                          '/lookup/explain/delete/?' + urlencode(expl_id_args)))
             urls.append(('like explain: %s' % expl_id,
                          '/lookup/explain/like/?' + urlencode(expl_id_args)))
         if expl_str != '':
-            expl_str_args = dict(word_id_args, **{'expl_str': expl_str})
+            expl_str_args = dict(word_id_args, expl_str=expl_str)
             urls.append(('provide explain: %s, %s' % (word_id, expl_str),
                          '/lookup/explain/provide/?' + urlencode(expl_str_args)))
     dictt = {}
@@ -54,6 +60,7 @@ def index(request):
     dictt['word_id'] = word_id if word_id is not None else ''
     dictt['expl_id'] = expl_id if expl_id is not None else ''
     dictt['expl_str'] = expl_str
+    dictt['excl_expl_ids'] = excl_expl_ids
     return render_to_response('index.html', dictt)
 
 def test(request):
@@ -111,13 +118,15 @@ def query_explain(request):
 
     word_id = request.GET.get('word_id', None)
     word_str = request.GET.get('word_str', '')
+    excl_expl_ids = request.GET.get('excl_expl_ids', '').split(',')
+    excl_expl_ids = [int(expl_id) for expl_id in excl_expl_ids if re.match(r'^\d+$', expl_id)]
 
     if word_id is not None:
         word = mgr.word.get(word_id=word_id)
     else:
         word = mgr.word.get(word_str=word_str)
 
-    expls = dictt.get_expls(word, gag_id, user)
+    expls = dictt.get_expls(word, gag_id, user, excl_expl_ids)
     if expls == None:
         return HttpResponse(make_json_respond('FAIL'))
     return HttpResponse(make_json_respond('OKAY', expls))
