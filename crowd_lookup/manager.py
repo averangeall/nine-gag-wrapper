@@ -160,11 +160,12 @@ class PreferMgr(Manager):
         negative_records = models.PreferRecord.objects.filter(prefer__expl__word=word, user=user, val_type=models.PreferRecord.VAL_NEGATIVE)
         positive_prefers = [record.prefer for record in positive_records]
         negative_prefers = [record.prefer for record in negative_records]
-        good_prefers = []
-        good_prefers += positive_prefers
+        good_prefers = set()
+        good_prefers |= set(positive_prefers)
         for prefer in all_prefers:
             if prefer not in negative_records:
-                good_prefers.append(prefer)
+                good_prefers.add(prefer)
+        good_prefers = sorted(good_prefers, key=lambda prefer: -prefer.score)
         return [prefer.expl for prefer in good_prefers]
 
     def going_up(self, expl, gag_id, user):
