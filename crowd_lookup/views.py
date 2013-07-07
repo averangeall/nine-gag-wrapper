@@ -37,16 +37,16 @@ def index(request):
         word_id_args = dict(default_args, word_id=word_id)
         urls.append(('query explain: %s' % word_id,
                      '/lookup/explain/query/?' + urlencode(word_id_args)))
-        urls.append(('delete recomm: %s' % word_id,
-                     '/lookup/recomm/delete/?' + urlencode(word_id_args)))
+        urls.append(('hate recomm: %s' % word_id,
+                     '/lookup/recomm/hate/?' + urlencode(word_id_args)))
         if excl_expl_ids != '':
             excl_expl_ids_args = dict(word_id_args, excl_expl_ids=excl_expl_ids)
             urls.append(('query explain: %s, excludes: %s' % (word_id, excl_expl_ids),
                          '/lookup/explain/query/?' + urlencode(excl_expl_ids_args)))
         if expl_id:
             expl_id_args = dict(default_args, expl_id=expl_id)
-            urls.append(('delete explain: %s' % expl_id,
-                         '/lookup/explain/delete/?' + urlencode(expl_id_args)))
+            urls.append(('hate explain: %s' % expl_id,
+                         '/lookup/explain/hate/?' + urlencode(expl_id_args)))
             urls.append(('like explain: %s' % expl_id,
                          '/lookup/explain/like/?' + urlencode(expl_id_args)))
         if expl_str != '':
@@ -98,7 +98,7 @@ def get_recomm(request):
     log.put(gag_id, user, user_ip, 'GET_RECOMM', True, 'got %d recomms' % len(recomms))
     return HttpResponse(make_json_respond('OKAY', recomms))
 
-def delete_recomm(request):
+def hate_recomm(request):
     gag_id, user, user_ip, is_valid = get_basic_info(request)
     if not is_valid:
         return HttpResponse(make_json_respond('INVALID'))
@@ -131,7 +131,7 @@ def query_explain(request):
         return HttpResponse(make_json_respond('FAIL'))
     return HttpResponse(make_json_respond('OKAY', expls))
 
-def delete_explain(request):
+def hate_explain(request):
     gag_id, user, user_ip, is_valid = get_basic_info(request)
     if not is_valid:
         return HttpResponse(make_json_respond('INVALID'))
