@@ -35,6 +35,12 @@ class NineDict:
     def like_expl(self, expl, gag_id, user):
         return self._mgr.prefer.going_up(expl, gag_id, user)
 
+    def provide_expl(self, expl_str, word):
+        expl = self._mgr.explain.add(expl_str=expl_str, word=word, init_score=1.0)
+        if not expl:
+            return None
+        return tools._make_dicts([expl])
+
     def _get_expls_from_web(self, word, gag_id):
         self._get_expls_from_browser(word, self._google_translate)
         self._get_expls_from_browser(word, self._google_image)

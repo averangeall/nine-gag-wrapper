@@ -168,11 +168,10 @@ def provide_explain(request):
     expl_str = request.GET.get('expl_str', '')
 
     word = mgr.word.get(word_id=word_id)
-    expl = mgr.explain.add(expl_str=expl_str, word=word, init_score=1.0)
+    expl = dictt.provide_expl(expl_str, word)
 
     success = expl is not None
     if not success:
         return HttpResponse(make_json_respond('FAIL'))
-    return HttpResponse(make_json_respond('OKAY'))
-
+    return HttpResponse(make_json_respond('OKAY', expl))
 
