@@ -13,6 +13,7 @@ urlpatterns = patterns('',
 
     url(r'^lookup/recomm/get/$', 'crowd_lookup.views.get_recomm'),
     url(r'^lookup/recomm/hate/$', 'crowd_lookup.views.hate_recomm'),
+    url(r'^lookup/recomm/id/$', 'crowd_lookup.views.id_recomm'),
 
     url(r'^lookup/explain/query/$', 'crowd_lookup.views.query_explain'),
     url(r'^lookup/explain/hate/$', 'crowd_lookup.views.hate_explain'),

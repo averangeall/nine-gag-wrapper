@@ -33,6 +33,9 @@ def index(request):
         word_str_args = dict(default_args, word_str=word_str)
         urls.append(('query explain: %s' % word_str,
                      '/lookup/explain/query/?' + urlencode(word_str_args)))
+        urls.append(('id recomm: %s' % word_str,
+                     '/lookup/recomm/id/?' + urlencode(word_str_args)))
+
     if word_id:
         word_id_args = dict(default_args, word_id=word_id)
         urls.append(('query explain: %s' % word_id,
@@ -110,6 +113,19 @@ def hate_recomm(request):
     if not success:
         return HttpResponse(make_json_respond('FAIL'))
     return HttpResponse(make_json_respond('OKAY'))
+
+def id_recomm(request):
+    gag_id, user, user_ip, is_valid = get_basic_info(request)
+    if not is_valid:
+        return HttpResponse(make_json_respond('INVALID'))
+
+    word_str = request.GET.get('word_str', '')
+
+    word = mgr.word.get(word_str=word_str)
+    success = word
+    if not success:
+        return HttpResponse(make_json_respond('FAIL'))
+    return HttpResponse(make_json_respond('OKAY', {'id': word.id}))
 
 def query_explain(request):
     gag_id, user, user_ip, is_valid = get_basic_info(request)
