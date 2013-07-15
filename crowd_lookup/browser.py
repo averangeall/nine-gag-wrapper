@@ -80,7 +80,9 @@ class DrEye(BaseBrowser):
 
 class GoogleImage(BaseBrowser):
     def query(self, word):
+        word = re.sub(r'\s+', '+', word)
         url = 'https://www.google.com.tw/search?um=1&hl=zh-TW&biw=1366&bih=682&tbm=isch&q=%s&oq=%s' % (word.lower(), word.lower())
+        print url
         soup = self._get_page_soup(url)
         res = []
         try:
