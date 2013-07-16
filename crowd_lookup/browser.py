@@ -125,6 +125,23 @@ class GoogleTranslate(BaseBrowser):
     def get_name(self):
         return 'Google Translate'
 
+class UrbanDictionary(BaseBrowser):
+    def query(self, word):
+        word = re.sub(r'\s+', '+', word)
+        url = 'http://www.urbandictionary.com/define.php?term=%s' % word
+        soup = self._get_page_soup(url)
+        eng_defi = soup.find('div', {'class': 'definition'}).string
+        google_translate = GoogleTranslate()
+        trans = google_translate.query(eng_defi)
+        zh_defi = trans[0][0] if trans else ''
+        return [(eng_defi + '\n' + zh_defi, url, models.Explain.REPR_TEXT)]
+
+    def get_name(self):
+        return 'Urban Dictionary'
+
+class YouTube(BaseBrowser):
+    pass
+
 if __name__ == '__main__':
     br = GoogleImage()
     for a in br.query('hello'):

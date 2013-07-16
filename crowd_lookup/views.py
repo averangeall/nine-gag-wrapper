@@ -67,10 +67,10 @@ def index(request):
     return render_to_response('index.html', dictt)
 
 def test(request):
-    gag_id = 'ajYbzzx'
-    word = mgr.word.get(word_id=635)
-    recomms = models.Prefer.objects.filter(expl__word=word)
-    return HttpResponse(make_json_respond('OKAY', [recomm.to_dict() for recomm in recomms]))
+    import browser
+    word_str = request.GET.get('word_str', '')
+    urban = browser.UrbanDictionary()
+    return HttpResponse(make_json_respond('OKAY', [urban.query(word_str)]))
 
 def new_user(request):
     user_id, user_key = gen_user_info()
