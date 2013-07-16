@@ -43,6 +43,11 @@ class BaseBrowser:
                 src = src[pos + len('</script>') :]
         return dst
 
+    def _get_page_content(self, url):
+        page = self._br.open(url)
+        content = page.read()
+        return content
+
     def _get_page_soup(self, url):
         page = self._br.open(url)
         content = page.read()
@@ -140,7 +145,22 @@ class UrbanDictionary(BaseBrowser):
         return 'Urban Dictionary'
 
 class YouTube(BaseBrowser):
-    pass
+    def query(self, word):
+        word = re.sub(r'\s+', '+', word)
+        url = 'https://gdata.youtube.com/feeds/api/videos?q=%s&max-results=10&v=2&alt=json' % word
+        content = self._get_page_content(url)
+        search = json.loads(content)
+        res = []
+        for entry in search['feed']['entry']:
+            info = entry['id']['$t']
+            mo = re.match('.+?video:(.+)', info)
+            video_id = mo.group(1)
+            link_url = 'http://www.youtube.com/watch?v=%s' % video_id
+            res.append((link_url, link_url, models.Explain.REPR_VIDEO))
+        return res
+
+    def get_name(self):
+        return 'YouTube'
 
 if __name__ == '__main__':
     br = GoogleImage()
