@@ -1,12 +1,12 @@
 import json
+import random
 import models
 from manager import UserMgr
 
 def _check_valid(gag_id, user, valid_key):
     if gag_id in [None, ''] or user  == None:
         return False
-    # TODO: make the validation working
-    return valid_key == 'hello'
+    return valid_key == user.key
 
 def _get_client_ip(request):
     x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
@@ -39,3 +39,18 @@ def normalize_str(self, string):
 def _make_dicts(objs):
     return [obj.to_dict() for obj in objs]
 
+def gen_user_info():
+    user_mgr = UserMgr()
+    while True:
+        user_id = random.randint(1, 2 ** 30)
+        if user_mgr.get(user_id) == None:
+            break
+
+    user_key = ''
+    choices = [chr(i) for i in range(ord('0'), ord('9') + 1)] + \
+              [chr(i) for i in range(ord('A'), ord('Z') + 1)] + \
+              [chr(i) for i in range(ord('a'), ord('z') + 1)]
+    for i in range(32):
+        user_key += random.choice(choices)
+
+    return user_id, user_key

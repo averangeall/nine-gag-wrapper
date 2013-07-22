@@ -1,4 +1,3 @@
-import random
 import models
 #import tools
 
@@ -119,14 +118,18 @@ class ExplainMgr(Manager):
             return None
 
     def add(self, **kwargs):
-        assert 'expl_str' in kwargs and 'word' in kwargs
+        assert 'expl_str' in kwargs and 'word' in kwargs and 'init_score' in kwargs
         expl_str = kwargs['expl_str']
         word = kwargs['word']
+        init_score = kwargs['init_score']
         #expl_str = tools.normalize_str(expl_str)
         if word == None or expl_str == '':
             return None
         expls = models.Explain.objects.filter(content=expl_str, word=word)
-        if not expls.count():
+        if expls.count():
+            assert len(expls) == 1
+            expl = expls[0]
+        else:
             repr_type = kwargs['repr_type'] if 'repr_type' in kwargs else self._guess_repr_type(expl_str)
             source = kwargs['source'] if 'source' in kwargs else 'User Provide'
             link = kwargs['link'] if 'link' in kwargs else ''
@@ -136,9 +139,8 @@ class ExplainMgr(Manager):
                                   source=source,
                                   link=link)
             expl.save()
-        else:
-            assert len(expls) == 1
-            expl = expls[0]
+            prefer = models.Prefer(expl=expl, score=init_score)
+            prefer.save()
         return expl
 
     def _guess_repr_type(self, expl_str):
@@ -153,22 +155,29 @@ class PreferMgr(Manager):
             return None
 
     def query(self, word, gag_id, user):
-        expls = models.Explain.objects.filter(word=word)
-        prefers = models.Prefer.objects.filter(expl__word=word, score__lt=-1.0)
-        records = models.PreferRecord.objects.filter(prefer__expl__word=word, 
-                                                     user=user, 
-                                                     val_type=models.PreferRecord.VAL_NEGATIVE)
-        if not expls.count():
-            return []
-        remain = set(expls) - set([prefer.expl for prefer in prefers])
-        if not remain:
-            return []
-        remain -= set([record.prefer.expl for record in records])
-        random.seed(user.id)
-        num_choose = 3
-        if len(remain) < num_choose:
-            return remain
-        return random.sample(remain, num_choose)
+        all_prefers = models.Prefer.objects.filter(expl__word=word, score__gt=0.0).order_by('-score')
+        positive_records = models.PreferRecord.objects.filter(prefer__expl__word=word, user=user, val_type=models.PreferRecord.VAL_POSITIVE)
+        negative_records = models.PreferRecord.objects.filter(prefer__expl__word=word, user=user, val_type=models.PreferRecord.VAL_NEGATIVE)
+        positive_prefers = [record.prefer for record in positive_records]
+        negative_prefers = [record.prefer for record in negative_records]
+        good_prefers = set()
+        good_prefers |= set(positive_prefers)
+        for prefer in all_prefers:
+            if prefer not in negative_records:
+                good_prefers.add(prefer)
+        good_prefers = sorted(good_prefers, key=lambda prefer: -prefer.score)
+        return [prefer.expl for prefer in good_prefers]
+
+    def going_up(self, expl, gag_id, user):
+        prefer = self.get(expl)
+        record = self._get_record(prefer, gag_id, user)
+        if self._went_to(record, models.PreferRecord.VAL_POSITIVE):
+            return False
+        if not prefer:
+            prefer = self._create(expl)
+        self._change_score(prefer, +1.0)
+        self._leave_record(record, prefer, gag_id, user, models.PreferRecord.VAL_POSITIVE)
+        return True
 
     def going_down(self, expl, gag_id, user):
         prefer = self.get(expl)
@@ -179,6 +188,17 @@ class PreferMgr(Manager):
             prefer = self._create(expl)
         self._change_score(prefer, -1.0)
         self._leave_record(record, prefer, gag_id, user, models.PreferRecord.VAL_NEGATIVE)
+        return True
+
+    def going_plain(self, expl, gag_id, user):
+        prefer = self.get(expl)
+        record = self._get_record(prefer, gag_id, user)
+        if self._went_to(record, models.PreferRecord.VAL_POSITIVE):
+            return False
+        if not prefer:
+            prefer = self._create(expl)
+        self._change_score(prefer, 0.0)
+        self._leave_record(record, prefer, gag_id, user, models.PreferRecord.VAL_PLAIN)
         return True
 
     def _get_record(self, prefer, gag_id, user):
@@ -218,6 +238,10 @@ class UserMgr(Manager):
             return models.User.objects.get(id=user_id)
         except:
             return None
+
+    def create(self, user_id, user_key):
+        user = models.User(id=user_id, key=user_key, name=None)
+        user.save()
 
 class AllManagers:
     def __init__(self):

@@ -51,6 +51,8 @@ class Prefer(models.Model):
 
 class User(models.Model):
     id = models.IntegerField(primary_key=True)
+    key = models.TextField()
+    name = models.TextField()
 
 class RecommRecord(models.Model):
     VAL_POSITIVE = 'PO'
@@ -67,9 +69,11 @@ class RecommRecord(models.Model):
 class PreferRecord(models.Model):
     VAL_POSITIVE = 'PO'
     VAL_NEGATIVE = 'NE'
+    VAL_PLAIN = 'PL'
     VAL_TYPE_CHOICES = (
         (VAL_POSITIVE, 'positive'),
         (VAL_NEGATIVE, 'negative'),
+        (VAL_PLAIN, 'plain'),
     )
 
     user = models.ForeignKey(User)
