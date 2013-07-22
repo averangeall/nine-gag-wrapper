@@ -45,6 +45,8 @@ class RecommMgr(Manager):
             if 'valence' not in kwargs:
                 return None
             recomms = models.Recomm.objects.filter(gag_id=gag_id, user=kwargs['user'], val_type=kwargs['valence'])
+            for recomm in recomms:
+                words.append(recomm.word)
         return words
 
     def _count_points(self, recomms):
