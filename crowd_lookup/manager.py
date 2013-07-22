@@ -190,6 +190,17 @@ class PreferMgr(Manager):
         self._leave_record(record, prefer, gag_id, user, models.PreferRecord.VAL_NEGATIVE)
         return True
 
+    def going_plain(self, expl, gag_id, user):
+        prefer = self.get(expl)
+        record = self._get_record(prefer, gag_id, user)
+        if self._went_to(record, models.PreferRecord.VAL_POSITIVE):
+            return False
+        if not prefer:
+            prefer = self._create(expl)
+        self._change_score(prefer, 0.0)
+        self._leave_record(record, prefer, gag_id, user, models.PreferRecord.VAL_PLAIN)
+        return True
+
     def _get_record(self, prefer, gag_id, user):
         records = models.PreferRecord.objects.filter(prefer=prefer, gag_id=gag_id, user=user)
         if not records.count():

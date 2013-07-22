@@ -153,7 +153,6 @@ def hate_explain(request):
         return HttpResponse(make_json_respond('INVALID'))
 
     expl_id = request.GET.get('expl_id', None)
-
     expl = mgr.explain.get(expl_id=expl_id)
 
     success = dictt.delete_expl(expl, gag_id, user)
@@ -167,10 +166,22 @@ def like_explain(request):
         return HttpResponse(make_json_respond('INVALID'))
 
     expl_id = request.GET.get('expl_id', None)
-
     expl = mgr.explain.get(expl_id=expl_id)
 
     success = dictt.like_expl(expl, gag_id, user)
+    if not success:
+        return HttpResponse(make_json_respond('FAIL'))
+    return HttpResponse(make_json_respond('OKAY'))
+
+def neutral_explain(request):
+    gag_id, user, user_ip, is_valid = get_basic_info(request)
+    if not is_valid:
+        return HttpResponse(make_json_respond('INVALID'))
+
+    expl_id = request.GET.get('expl_id', None)
+    expl = mgr.explain.get(expl_id=expl_id)
+
+    success = dictt.neutral_expl(expl, gag_id, user)
     if not success:
         return HttpResponse(make_json_respond('FAIL'))
     return HttpResponse(make_json_respond('OKAY'))

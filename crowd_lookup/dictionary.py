@@ -35,6 +35,9 @@ class NineDict:
     def like_expl(self, expl, gag_id, user):
         return self._mgr.prefer.going_up(expl, gag_id, user)
 
+    def neutral_explain(self, expl, gag_id, user):
+        return self._mgr.prefer.going_plain(expl, gag_id, user)
+
     def provide_expl(self, expl_str, word):
         expl = self._mgr.explain.add(expl_str=expl_str, word=word, init_score=1.0)
         if not expl:
