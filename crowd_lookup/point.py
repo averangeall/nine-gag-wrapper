@@ -7,7 +7,7 @@ USER_RECOMM_VAL_POINT = 0.9
 ADMIN_RECOMM_VAL_POINT = 4.5
 
 #     how many points required to be visible to everyone?
-MIN_VISIBLE_POINT = 1.5
+MIN_RECOMM_VISIBLE_POINT = 1.5
 
 
 # Explain:
@@ -17,6 +17,9 @@ USER_EXPL_VAL_POINT = 0.9
 
 #     how many points will an admin like/hate affect a explain?
 ADMIN_EXPL_VAL_POINT = 4.5
+
+#     how many points required to be visible to everyone?
+MIN_EXPL_VISIBLE_POINT = 0.0
 
 #     what is the maximum initial point of a explain from the internet?
 WEB_EXPL_MAX_INIT_POINT = 1.5

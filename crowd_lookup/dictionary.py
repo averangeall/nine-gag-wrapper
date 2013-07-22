@@ -13,8 +13,8 @@ class NineDict:
     def get_recomm(self, gag_id, user):
         recomms = set()
         recomms |= set(self._mgr.recomm.query(gag_id))
-        recomms |= set(self._mgr.recomm.query(gag_id, user=user, valence=models.RecommRecord.VAL_POSITIVE))
-        recomms -= set(self._mgr.recomm.query(gag_id, user=user, valence=models.RecommRecord.VAL_NEGATIVE))
+        recomms |= set(self._mgr.recomm.query(gag_id, user=user, valence=models.Recomm.VAL_POSITIVE))
+        recomms -= set(self._mgr.recomm.query(gag_id, user=user, valence=models.Recomm.VAL_NEGATIVE))
         return tools._make_dicts(recomms)
 
     def delete_recomm(self, word, gag_id, user):
