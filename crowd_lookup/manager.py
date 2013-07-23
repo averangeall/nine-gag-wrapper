@@ -164,6 +164,14 @@ class PreferMgr(Manager):
     def going_plain(self, expl, gag_id, user):
         return self._going_to(expl, gag_id, user, None)
 
+    def is_liked(self, user, expl):
+        prefers = models.Prefer.objects.filter(expl=expl, user=user)
+        if not prefers.count():
+            return False
+        assert prefers.count() == 1
+        prefer = prefers[0]
+        return prefer.val_type == models.Prefer.VAL_POSITIVE
+
     def _going_to(self, expl, gag_id, user, val_type):
         prefers = models.Prefer.objects.filter(expl=expl, user=user)
         if not prefers.count():
@@ -220,10 +228,10 @@ class PreferMgr(Manager):
             else:
                 points = point.USER_EXPL_VAL_POINT * valence
 
-            if prefer.word in counts:
-                counts[prefer.word] += points
+            if prefer.expl in counts:
+                counts[prefer.expl] += points
             else:
-                counts[prefer.word] = points
+                counts[prefer.expl] = points
 
         return counts
 

@@ -24,7 +24,11 @@ class NineDict:
             expls = self._mgr.prefer.query(word, gag_id, user)
         expls = filter(lambda expl: expl.id not in excl_expl_ids, expls)[:5]
         self._mgr.recomm.going_up(word, gag_id, user)
-        return tools._make_dicts(expls)
+        res = tools._make_dicts(expls)
+        for i, item in enumerate(res):
+            expl = self._mgr.explain.get(expl_id=item['id'])
+            res[i]['liked'] = self._mgr.prefer.is_liked(user, expl)
+        return res
 
     def delete_expl(self, expl, gag_id, user):
         return self._mgr.prefer.going_down(expl, gag_id, user)
