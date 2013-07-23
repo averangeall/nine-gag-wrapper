@@ -14,9 +14,10 @@ class NineDict:
 
         self._mgr = AllManagers()
 
-    def get_recomm(self, gag_id, user):
-        recomms = self._mgr.recomm.query(gag_id, user)
-        return tools._make_dicts(recomms)
+    def get_recomm(self, gag_id, user, excl_recomm_ids):
+        words = self._mgr.recomm.query(gag_id, user)
+        words = filter(lambda word: word.id not in excl_recomm_ids, words)[:5]
+        return tools._make_dicts(words)
 
     def delete_recomm(self, word, gag_id, user):
         return self._mgr.recomm.going_down(word, gag_id, user)

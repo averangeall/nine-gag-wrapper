@@ -15,20 +15,28 @@ log = Logger()
 mgr = AllManagers()
 
 def index(request):
-    gag_id = 'ajYbzzx'
     user_id = 907954370
     user_key = 'lsopa7KtFmsJWv6UlZ78ZJ0z0Gsk5Qq3'
+    gag_id = request.GET.get('gag_id', 'ajYbzzx')
     word_str = request.GET.get('word_str', '')
     word_id = request.GET.get('word_id', None)
     expl_id = request.GET.get('expl_id', None)
     expl_str = request.GET.get('expl_str', '')
+    excl_recomm_ids = request.GET.get('excl_recomm_ids', '')
     excl_expl_ids = request.GET.get('excl_expl_ids', '')
     default_args = {'gag_id': gag_id, 'user_id': user_id, 'valid_key': user_key}
     urls = []
+
     urls.append(('create user',
                  '/lookup/user/new/'))
     urls.append(('get recomm',
                  '/lookup/recomm/get/?' + urlencode(default_args)))
+
+    if excl_recomm_ids != '':
+        excl_recomm_ids_args = dict(default_args, excl_recomm_ids=excl_recomm_ids)
+        urls.append(('get recomm, excludes: %s' % excl_recomm_ids,
+                     '/lookup/recomm/get/?' + urlencode(excl_recomm_ids_args)))
+
     if word_str != '':
         word_str_args = dict(default_args, word_str=word_str)
         urls.append(('query explain: %s' % word_str,
@@ -65,6 +73,7 @@ def index(request):
     dictt['word_id'] = word_id if word_id is not None else ''
     dictt['expl_id'] = expl_id if expl_id is not None else ''
     dictt['expl_str'] = expl_str
+    dictt['excl_recomm_ids'] = excl_recomm_ids
     dictt['excl_expl_ids'] = excl_expl_ids
     return render_to_response('index.html', dictt)
 
@@ -96,7 +105,10 @@ def get_recomm(request):
         log.put(gag_id, user, user_ip, 'GET_RECOMM', False, 'key invalid')
         return HttpResponse(make_json_respond('INVALID'))
 
-    recomms = dictt.get_recomm(gag_id, user)
+    excl_recomm_ids = request.GET.get('excl_recomm_ids', '').split(',')
+    excl_recomm_ids = [int(recomm_id) for recomm_id in excl_recomm_ids if re.match(r'^\d+$', recomm_id)]
+
+    recomms = dictt.get_recomm(gag_id, user, excl_recomm_ids)
     if recomms == None:
         log.put(gag_id, user, user_ip, 'GET_RECOMM', True, 'something went wrong')
         return HttpResponse(make_json_respond('FAIL'))
