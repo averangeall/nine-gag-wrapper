@@ -33,20 +33,35 @@ class WordMgr(Manager):
             return None
 
 class RecommMgr(Manager):
-    def query(self, gag_id, **kwargs):
+    def query(self, gag_id, user):
+        counts = self._general_query(gag_id)
+        sort = sorted(counts.items(), key=lambda item: -item[1])
+        
+        positives = self._user_words(gag_id, user, models.Recomm.VAL_POSITIVE)
+        negatives = self._user_words(gag_id, user, models.Recomm.VAL_NEGATIVE)
+
+        res = []
+        res.extend(positives)
+        res.extend([item[0] for item in sort if item[0] not in negatives and item[0] not in positives])
+
+        return res
+
+    def _general_query(self, gag_id):
+        recomms = models.Recomm.objects.filter(gag_id=gag_id)
+        counts = self._count_points(recomms)
+        pop_list = []
+        for word in counts:
+            if counts[word] < point.MIN_RECOMM_VISIBLE_POINT:
+                pop_list.append(word)
+        for word in pop_list:
+            counts.pop(word)
+        return counts
+
+    def _user_words(self, gag_id, user, val_type):
         words = []
-        if 'user' not in kwargs:
-            recomms = models.Recomm.objects.filter(gag_id=gag_id)
-            counts = self._count_points(recomms)
-            for word in counts:
-                if counts[word] > point.MIN_RECOMM_VISIBLE_POINT:
-                    words.append(word)
-        else:
-            if 'valence' not in kwargs:
-                return None
-            recomms = models.Recomm.objects.filter(gag_id=gag_id, user=kwargs['user'], val_type=kwargs['valence'])
-            for recomm in recomms:
-                words.append(recomm.word)
+        recomms = models.Recomm.objects.filter(gag_id=gag_id, user=user, val_type=val_type)
+        for recomm in recomms:
+            words.append(recomm.word)
         return words
 
     def going_up(self, word, gag_id, user):
