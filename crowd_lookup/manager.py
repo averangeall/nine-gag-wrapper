@@ -49,6 +49,25 @@ class RecommMgr(Manager):
                 words.append(recomm.word)
         return words
 
+    def going_up(self, word, gag_id, user):
+        self._going_to(word, gag_id, user, models.Recomm.VAL_POSITIVE)
+
+    def going_down(self, word, gag_id, user):
+        return self._going_to(word, gag_id, user, models.Recomm.VAL_NEGATIVE)
+
+    def _going_to(self, word, gag_id, user, val_type):
+        recomms = models.Recomm.objects.filter(word=word, gag_id=gag_id, user=user)
+        if not recomms.count():
+            recomm = models.Recomm(word=word, gag_id=gag_id, user=user, val_type=val_type)
+        else:
+            assert recomms.count() == 1
+            recomm = recomms[0]
+            if recomm.val_type == val_type:
+                return False
+            recomm.val_type = val_type
+        recomm.save()
+        return True
+
     def _count_points(self, recomms):
         counts = {}
         for recomm in recomms:
@@ -70,84 +89,6 @@ class RecommMgr(Manager):
                 counts[recomm.word] = points
 
         return counts
-
-    #def get(self, gag_id, word):
-    #    recomms = models.Recomm.objects.filter(gag_id=gag_id, word=word)
-    #    if not recomms.count():
-    #        return None
-    #    assert len(recomms) == 1
-    #    recomm = recomms[0]
-    #    return recomm
-
-    #def query(self, gag_id, **kwargs):
-    #    if 'user' not in kwargs:
-    #        return self._query_by_gag_id(gag_id)
-    #    else:
-    #        if 'valence' not in kwargs:
-    #            return None
-    #        return self._query_by_user(gag_id, kwargs['user'], kwargs['valence'])
-    #    return None
-
-    #def _query_by_gag_id(self, gag_id):
-    #    recomms = models.Recomm.objects.filter(gag_id=gag_id, score__gt=0.5)
-    #    return recomms
-
-    #def _query_by_user(self, gag_id, user, valence):
-    #    records = models.RecommRecord.objects.filter(user=user, val_type=valence)
-    #    recomms = [record.recomm for record in records if record.recomm.gag_id == gag_id]
-    #    return recomms
-
-    #def going_up(self, word, gag_id, user):
-    #    recomm = self.get(gag_id, word)
-    #    record = self._get_record(user, recomm)
-    #    if self._went_to(record, models.RecommRecord.VAL_POSITIVE):
-    #        return
-    #    if not recomm:
-    #        recomm = self._create(gag_id, word)
-    #    self._change_score(recomm, +1.0)
-    #    self._leave_record(record, recomm, user, models.RecommRecord.VAL_POSITIVE)
-
-    #def going_down(self, word, gag_id, user):
-    #    recomm = self.get(gag_id, word)
-    #    record = self._get_record(user, recomm)
-    #    if self._went_to(record, models.RecommRecord.VAL_NEGATIVE):
-    #        return False
-    #    if not recomm:
-    #        return False
-    #    self._change_score(recomm, -1.0)
-    #    self._leave_record(record, recomm, user, models.RecommRecord.VAL_NEGATIVE)
-    #    return True
-
-    #def _get_record(self, user, recomm):
-    #    records = models.RecommRecord.objects.filter(user=user, recomm=recomm)
-    #    if not records.count():
-    #        return None
-    #    assert len(records) == 1
-    #    record = records[0]
-    #    return record
-
-    #def _went_to(self, record, valence):
-    #    if record == None:
-    #        return False
-    #    return record.val_type == valence
-
-    #def _create(self, gag_id, word):
-    #    recomm = models.Recomm(gag_id=gag_id, word=word, score=0.0)
-    #    recomm.save()
-    #    return recomm
-
-    #def _change_score(self, recomm, score_delta):
-    #    assert recomm
-    #    recomm.score += score_delta
-    #    recomm.save()
-    #    
-    #def _leave_record(self, record, recomm, user, valence):
-    #    if record:
-    #        record.val_type = valence
-    #    else:
-    #        assert recomm
-    #        record = models.RecommRecord(user=user, recomm=recomm, val_type=valence)
-    #    record.save()
 
 class ExplainMgr(Manager):
     def get(self, expl_id):
