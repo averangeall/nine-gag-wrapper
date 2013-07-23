@@ -21,14 +21,23 @@ ADMIN_EXPL_VAL_POINT = 4.5
 #     how many points required to be visible to everyone?
 MIN_EXPL_VISIBLE_POINT = 0.0
 
-#     what is the maximum initial point of a explain from the internet?
-WEB_EXPL_MAX_INIT_POINT = 1.5
-
-#     what is the maximum initial point of a explain from a user?
+#     what is the initial point of a explain from a user?
 USER_EXPL_INIT_POINT = 2.0
 
-#     what is the maximum initial point of a explain from a user?
+#     what is the initial point of a explain from a user?
 ADMIN_EXPL_INIT_POINT = 5.0
 
+#     what is the maximum initial point of a explain from google translate?
+GT_SINGLE_EXPL_INIT_POINT = 1.4
+GT_MULTIPLE_EXPL_INIT_POINT = 0.5
 
+#     what is the maximum initial point of a explain from urban dictionary?
+UD_NO_GT_EXPL_INIT_POINT = 1.2
+UD_WITH_GT_EXPL_INIT_POINT = 0.3
+
+#     what is the maximum initial point of a explain from google image?
+GI_EXPL_INIT_POINT = 1.0
+
+#     what is the maximum initial point of a explain from urban dictionary?
+YT_EXPL_INIT_POINT = 0.7
 

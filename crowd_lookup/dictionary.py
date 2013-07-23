@@ -1,12 +1,16 @@
+import re
 import models
 import browser
 import tools
+import point
 from manager import AllManagers
 
 class NineDict:
     def __init__(self):
         self._google_translate = browser.GoogleTranslate()
         self._google_image = browser.GoogleImage()
+        self._urban_dictionary = browser.UrbanDictionary()
+        self._youtube = browser.YouTube()
 
         self._mgr = AllManagers()
 
@@ -46,14 +50,23 @@ class NineDict:
         return tools._make_dicts([expl])
 
     def _get_expls_from_web(self, word, gag_id):
-        self._get_expls_from_browser(word, self._google_translate)
-        self._get_expls_from_browser(word, self._google_image)
+        gt_upper_bound = point.GT_SINGLE_EXPL_INIT_POINT if re.match('^[^\s]+$', word.content) else point.GT_MULTIPLE_EXPL_INIT_POINT
+        num_expls = self._get_expls_from_browser(word, self._google_translate, gt_upper_bound)
 
-    def _get_expls_from_browser(self, word, br):
+        ud_upper_bound = point.UD_NO_GT_EXPL_INIT_POINT if num_expls == 0 else point.UD_WITH_GT_EXPL_INIT_POINT
+        self._get_expls_from_browser(word, self._urban_dictionary, ud_upper_bound)
+
+        gi_upper_bound = point.GI_EXPL_INIT_POINT
+        self._get_expls_from_browser(word, self._google_image, gi_upper_bound)
+
+        yt_upper_bound = point.YT_EXPL_INIT_POINT
+        self._get_expls_from_browser(word, self._youtube, yt_upper_bound)
+
+    def _get_expls_from_browser(self, word, br, upper_bound):
         expl_tuples = br.query(word.content)
         rank = 1
         for expl_str, expl_url, expl_repr_type in expl_tuples:
-            init_score = 1.0 / rank ** 0.5
+            init_score = upper_bound / rank ** 0.5
             self._mgr.explain.add(word=word,
                                   repr_type=expl_repr_type,
                                   expl_str=expl_str,
@@ -62,4 +75,5 @@ class NineDict:
                                   init_score=init_score
                                  )
             rank += 1
+        return len(expl_tuples)
 
