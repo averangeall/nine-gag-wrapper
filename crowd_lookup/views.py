@@ -52,6 +52,8 @@ def index(request):
                          '/lookup/explain/hate/?' + urlencode(expl_id_args)))
             urls.append(('like explain: %s' % expl_id,
                          '/lookup/explain/like/?' + urlencode(expl_id_args)))
+            urls.append(('neutral explain: %s' % expl_id,
+                         '/lookup/explain/neutral/?' + urlencode(expl_id_args)))
         if expl_str != '':
             expl_str_args = dict(word_id_args, expl_str=expl_str)
             urls.append(('provide explain: %s, %s' % (word_id, expl_str),

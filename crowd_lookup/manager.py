@@ -132,10 +132,9 @@ class ExplainMgr(Manager):
                                   repr_type=repr_type,
                                   content=expl_str,
                                   source=source,
-                                  link=link)
+                                  link=link,
+                                  init_score=init_score)
             expl.save()
-            prefer = models.Prefer(expl=expl, score=init_score)
-            prefer.save()
         return expl
 
     def _guess_repr_type(self, expl_str):
@@ -143,89 +142,174 @@ class ExplainMgr(Manager):
         return models.Explain.REPR_TEXT
 
 class PreferMgr(Manager):
-    def get(self, expl):
-        try:
-            return models.Prefer.objects.get(expl=expl)
-        except:
-            return None
-
     def query(self, word, gag_id, user):
-        all_prefers = models.Prefer.objects.filter(expl__word=word, score__gt=0.0).order_by('-score')
-        positive_records = models.PreferRecord.objects.filter(prefer__expl__word=word, user=user, val_type=models.PreferRecord.VAL_POSITIVE)
-        negative_records = models.PreferRecord.objects.filter(prefer__expl__word=word, user=user, val_type=models.PreferRecord.VAL_NEGATIVE)
-        positive_prefers = [record.prefer for record in positive_records]
-        negative_prefers = [record.prefer for record in negative_records]
-        good_prefers = set()
-        good_prefers |= set(positive_prefers)
-        for prefer in all_prefers:
-            if prefer not in negative_records:
-                good_prefers.add(prefer)
-        good_prefers = sorted(good_prefers, key=lambda prefer: -prefer.score)
-        return [prefer.expl for prefer in good_prefers]
+        counts = self._general_query(word, gag_id)
+        sort = sorted(counts.items(), key=lambda item: -item[1])
+
+        positives = self._user_expls(word, gag_id, user, models.Recomm.VAL_POSITIVE)
+        negatives = self._user_expls(word, gag_id, user, models.Recomm.VAL_NEGATIVE)
+
+        res = []
+        res.extend(positives)
+        res.extend([item[0] for item in sort if item[0] not in negatives and item[0] not in positives])
+
+        return res
 
     def going_up(self, expl, gag_id, user):
-        prefer = self.get(expl)
-        record = self._get_record(prefer, gag_id, user)
-        if self._went_to(record, models.PreferRecord.VAL_POSITIVE):
-            return False
-        if not prefer:
-            prefer = self._create(expl)
-        self._change_score(prefer, +1.0)
-        self._leave_record(record, prefer, gag_id, user, models.PreferRecord.VAL_POSITIVE)
-        return True
+        return self._going_to(expl, gag_id, user, models.Prefer.VAL_POSITIVE)
 
     def going_down(self, expl, gag_id, user):
-        prefer = self.get(expl)
-        record = self._get_record(prefer, gag_id, user)
-        if self._went_to(record, models.PreferRecord.VAL_NEGATIVE):
-            return False
-        if not prefer:
-            prefer = self._create(expl)
-        self._change_score(prefer, -1.0)
-        self._leave_record(record, prefer, gag_id, user, models.PreferRecord.VAL_NEGATIVE)
-        return True
+        return self._going_to(expl, gag_id, user, models.Prefer.VAL_NEGATIVE)
 
     def going_plain(self, expl, gag_id, user):
-        prefer = self.get(expl)
-        record = self._get_record(prefer, gag_id, user)
-        if self._went_to(record, models.PreferRecord.VAL_POSITIVE):
-            return False
-        if not prefer:
-            prefer = self._create(expl)
-        self._change_score(prefer, 0.0)
-        self._leave_record(record, prefer, gag_id, user, models.PreferRecord.VAL_PLAIN)
+        return self._going_to(expl, gag_id, user, None)
+
+    def _going_to(self, expl, gag_id, user, val_type):
+        prefers = models.Prefer.objects.filter(expl=expl, user=user)
+        if not prefers.count():
+            if not val_type:
+                return False
+            prefer = models.Prefer(expl=expl, user=user, val_type=val_type)
+        else:
+            assert prefers.count() == 1
+            prefer = prefers[0]
+            if not val_type:
+                prefer.delete()
+                return True
+            if prefer.val_type == val_type:
+                return False
+            prefer.val_type = val_type
+        prefer.save()
         return True
 
-    def _get_record(self, prefer, gag_id, user):
-        records = models.PreferRecord.objects.filter(prefer=prefer, gag_id=gag_id, user=user)
-        if not records.count():
-            return None
-        assert len(records) == 1
-        record = records[0]
-        return record
+    def _general_query(self, word, gag_id):
+        expls = models.Explain.objects.filter(word=word)
+        prefers = models.Prefer.objects.filter(expl__word=word)
+        counts = self._count_points(expls, prefers)
+        pop_list = []
+        for expl in counts:
+            if counts[expl] < point.MIN_EXPL_VISIBLE_POINT:
+                pop_list.append(expl)
+        for expl in pop_list:
+            counts.pop(expl)
+        return counts
 
-    def _went_to(self, record, valence):
-        if record == None:
-            return False
-        return record.val_type == valence
+    def _user_expls(self, word, gag_id, user, val_type):
+        expls = []
+        prefers = models.Prefer.objects.filter(expl__word=word, user=user, val_type=val_type)
+        for prefer in prefers:
+            expls.append(prefer.expl)
+        return expls
 
-    def _create(self, expl):
-        prefer = models.Prefer(expl=expl, score=0.0)
-        prefer.save()
-        return prefer
+    def _count_points(self, expls, prefers):
+        counts = {}
 
-    def _change_score(self, prefer, score_delta):
-        assert prefer
-        prefer.score += score_delta
-        prefer.save()
-        
-    def _leave_record(self, record, prefer, gag_id, user, valence):
-        if record:
-            record.val_type = valence
-        else:
-            assert prefer
-            record = models.PreferRecord(user=user, gag_id=gag_id, prefer=prefer, val_type=valence)
-        record.save()
+        for expl in expls:
+            counts[expl] = expl.init_score
+
+        for prefer in prefers:
+            if prefer.val_type == models.Prefer.VAL_POSITIVE:
+                valence = +1.0
+            elif prefer.val_type == models.Prefer.VAL_NEGATIVE:
+                valence = -1.0
+            else:
+                assert False
+
+            if prefer.user.id == 0:
+                points = point.ADMIN_EXPL_VAL_POINT * valence
+            else:
+                points = point.USER_EXPL_VAL_POINT * valence
+
+            if prefer.word in counts:
+                counts[prefer.word] += points
+            else:
+                counts[prefer.word] = points
+
+        return counts
+
+    #def get(self, expl):
+    #    try:
+    #        return models.Prefer.objects.get(expl=expl)
+    #    except:
+    #        return None
+
+    #def query(self, word, gag_id, user):
+    #    all_prefers = models.Prefer.objects.filter(expl__word=word, score__gt=0.0).order_by('-score')
+    #    positive_records = models.PreferRecord.objects.filter(prefer__expl__word=word, user=user, val_type=models.PreferRecord.VAL_POSITIVE)
+    #    negative_records = models.PreferRecord.objects.filter(prefer__expl__word=word, user=user, val_type=models.PreferRecord.VAL_NEGATIVE)
+    #    positive_prefers = [record.prefer for record in positive_records]
+    #    negative_prefers = [record.prefer for record in negative_records]
+    #    good_prefers = set()
+    #    good_prefers |= set(positive_prefers)
+    #    for prefer in all_prefers:
+    #        if prefer not in negative_records:
+    #            good_prefers.add(prefer)
+    #    good_prefers = sorted(good_prefers, key=lambda prefer: -prefer.score)
+    #    return [prefer.expl for prefer in good_prefers]
+
+    #def going_up(self, expl, gag_id, user):
+    #    prefer = self.get(expl)
+    #    record = self._get_record(prefer, gag_id, user)
+    #    if self._went_to(record, models.PreferRecord.VAL_POSITIVE):
+    #        return False
+    #    if not prefer:
+    #        prefer = self._create(expl)
+    #    self._change_score(prefer, +1.0)
+    #    self._leave_record(record, prefer, gag_id, user, models.PreferRecord.VAL_POSITIVE)
+    #    return True
+
+    #def going_down(self, expl, gag_id, user):
+    #    prefer = self.get(expl)
+    #    record = self._get_record(prefer, gag_id, user)
+    #    if self._went_to(record, models.PreferRecord.VAL_NEGATIVE):
+    #        return False
+    #    if not prefer:
+    #        prefer = self._create(expl)
+    #    self._change_score(prefer, -1.0)
+    #    self._leave_record(record, prefer, gag_id, user, models.PreferRecord.VAL_NEGATIVE)
+    #    return True
+
+    #def going_plain(self, expl, gag_id, user):
+    #    prefer = self.get(expl)
+    #    record = self._get_record(prefer, gag_id, user)
+    #    if self._went_to(record, models.PreferRecord.VAL_POSITIVE):
+    #        return False
+    #    if not prefer:
+    #        prefer = self._create(expl)
+    #    self._change_score(prefer, 0.0)
+    #    self._leave_record(record, prefer, gag_id, user, models.PreferRecord.VAL_PLAIN)
+    #    return True
+
+    #def _get_record(self, prefer, gag_id, user):
+    #    records = models.PreferRecord.objects.filter(prefer=prefer, gag_id=gag_id, user=user)
+    #    if not records.count():
+    #        return None
+    #    assert len(records) == 1
+    #    record = records[0]
+    #    return record
+
+    #def _went_to(self, record, valence):
+    #    if record == None:
+    #        return False
+    #    return record.val_type == valence
+
+    #def _create(self, expl):
+    #    prefer = models.Prefer(expl=expl, score=0.0)
+    #    prefer.save()
+    #    return prefer
+
+    #def _change_score(self, prefer, score_delta):
+    #    assert prefer
+    #    prefer.score += score_delta
+    #    prefer.save()
+    #    
+    #def _leave_record(self, record, prefer, gag_id, user, valence):
+    #    if record:
+    #        record.val_type = valence
+    #    else:
+    #        assert prefer
+    #        record = models.PreferRecord(user=user, gag_id=gag_id, prefer=prefer, val_type=valence)
+    #    record.save()
 
 class UserMgr(Manager):
     def get(self, user_id):
