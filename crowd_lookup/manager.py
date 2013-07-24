@@ -246,6 +246,10 @@ class UserMgr(Manager):
         user = models.User(id=user_id, key=user_key, name=None)
         user.save()
 
+    def rename(self, user, new_name):
+        user.name = new_name
+        user.save()
+
 class LogMgr(Manager):
     def add(self, event_type, event_desc, user_id=None, user_ip=None):
         log = models.Log(event_type=event_type,

@@ -18,6 +18,7 @@ def index(request):
     user_id = 907954370
     user_key = 'lsopa7KtFmsJWv6UlZ78ZJ0z0Gsk5Qq3'
     gag_id = request.GET.get('gag_id', 'ajYbzzx')
+    new_name = request.GET.get('new_name', '')
     word_str = request.GET.get('word_str', '')
     word_id = request.GET.get('word_id', None)
     expl_id = request.GET.get('expl_id', None)
@@ -31,6 +32,11 @@ def index(request):
                  '/lookup/user/new/'))
     urls.append(('get recomm',
                  '/lookup/recomm/get/?' + urlencode(default_args)))
+
+    if new_name != '':
+        new_name_args = dict(default_args, new_name=new_name)
+        urls.append(('rename user: %s' % new_name,
+                     '/lookup/user/rename/?' + urlencode(new_name_args)))
 
     if excl_recomm_ids != '':
         excl_recomm_ids_args = dict(default_args, excl_recomm_ids=excl_recomm_ids)
@@ -68,6 +74,7 @@ def index(request):
                          '/lookup/explain/provide/?' + urlencode(expl_str_args)))
     dictt = {}
     dictt['gag_id'] = gag_id
+    dictt['new_name'] = new_name
     dictt['urls'] = urls
     dictt['word_str'] = word_str
     dictt['word_id'] = word_id if word_id is not None else ''
