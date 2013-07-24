@@ -1,3 +1,4 @@
+import mimetypes
 import models
 import point
 #import tools
@@ -138,7 +139,9 @@ class ExplainMgr(Manager):
         return expl
 
     def _guess_repr_type(self, expl_str):
-        # TODO: guess the representation type of the user given explain
+        mime = mimetypes.guess_type(expl_str)
+        if 'image' in mime[1]:
+            return models.Explain.REPR_IMAGE
         return models.Explain.REPR_TEXT
 
 class PreferMgr(Manager):
