@@ -68,13 +68,14 @@ class NineDict:
         rank = 1
         for expl_str, expl_url, expl_repr_type in expl_tuples:
             init_score = upper_bound / rank ** 0.5
-            self._mgr.explain.add(word=word,
-                                  repr_type=expl_repr_type,
-                                  expl_str=expl_str,
-                                  source=br.get_name(),
-                                  link=expl_url,
-                                  init_score=init_score
-                                 )
+            expl = self._mgr.explain.add(word=word,
+                                         repr_type=expl_repr_type,
+                                         expl_str=expl_str,
+                                         source=br.get_name(),
+                                         link=expl_url,
+                                         init_score=init_score
+                                        )
+            self._mgr.log.add('web explain', 'expl: %s' % (expl.id if expl else None))
             rank += 1
         return len(expl_tuples)
 
