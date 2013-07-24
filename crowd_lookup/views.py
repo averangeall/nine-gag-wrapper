@@ -15,14 +15,14 @@ mgr = AllManagers()
 def index(request):
     user_id = 907954370
     user_key = 'lsopa7KtFmsJWv6UlZ78ZJ0z0Gsk5Qq3'
-    gag_id = request.GET.get('gag_id', 'ajYbzzx')
-    new_name = request.GET.get('new_name', '')
-    word_str = request.GET.get('word_str', '')
+    gag_id = request.GET.get('gag_id', 'ajYbzzx').encode('utf8')
+    new_name = request.GET.get('new_name', '').encode('utf8')
+    word_str = request.GET.get('word_str', '').encode('utf8')
     word_id = request.GET.get('word_id', None)
     expl_id = request.GET.get('expl_id', None)
-    expl_str = request.GET.get('expl_str', '')
+    expl_str = request.GET.get('expl_str', '').encode('utf8')
     excl_recomm_ids = request.GET.get('excl_recomm_ids', '')
-    excl_expl_ids = request.GET.get('excl_expl_ids', '')
+    excl_expl_ids = request.GET.get('excl_expl_ids', '').encode('utf8')
     default_args = {'gag_id': gag_id, 'user_id': user_id, 'valid_key': user_key}
     urls = []
 
