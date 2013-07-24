@@ -7,7 +7,7 @@ from django.shortcuts import render_to_response
 import models
 from dictionary import NineDict
 from logger import Logger
-from tools import get_basic_info, make_json_respond, gen_user_info
+from tools import get_basic_info, make_json_respond, gen_user_info, get_client_ip
 from manager import AllManagers
 
 dictt = NineDict()
@@ -86,6 +86,7 @@ def test(request):
 def new_user(request):
     user_id, user_key = gen_user_info()
     mgr.user.create(user_id, user_key)
+    mgr.log.add('generate new user', 'user_id: %d' % user_id, user_ip=get_client_ip(request))
     return HttpResponse(make_json_respond('OKAY', {'id': user_id, 'key': user_key}))
 
 def rename_user(request):

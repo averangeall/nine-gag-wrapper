@@ -8,7 +8,7 @@ def _check_valid(gag_id, user, valid_key):
         return False
     return valid_key == user.key
 
-def _get_client_ip(request):
+def get_client_ip(request):
     x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
     if x_forwarded_for:
         return x_forwarded_for.split(',')[0]
@@ -20,7 +20,7 @@ def get_basic_info(request):
 
     gag_id = request.GET.get('gag_id', None)
     user_id = request.GET.get('user_id', None)
-    user_ip = _get_client_ip(request)
+    user_ip = get_client_ip(request)
     valid_key = request.GET.get('valid_key', None)
     user = user_mgr.get(user_id)
 
