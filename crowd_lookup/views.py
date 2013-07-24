@@ -91,45 +91,49 @@ def test(request):
 def new_user(request):
     user_id, user_key = gen_user_info()
     mgr.user.create(user_id, user_key)
-    mgr.log.add('generate new user', 'user_id: %d' % user_id, user_ip=get_client_ip(request))
+    mgr.log.add('generate new user', 'user_id: %s' % user_id, user_ip=get_client_ip(request))
     return HttpResponse(make_json_respond('OKAY', {'id': user_id, 'key': user_key}))
 
 def rename_user(request):
     gag_id, user, user_ip, is_valid = get_basic_info(request)
     if not is_valid:
-        log.put(gag_id, user, user_ip, 'GET_RECOMM', False, 'key invalid')
+        mgr.log.add('rename user', 'invalid', user, user_ip)
         return HttpResponse(make_json_respond('INVALID'))
 
     new_name = request.GET.get('new_name', '')
 
     mgr.user.rename(user, new_name)
+    mgr.log.add('rename user', 'new_name: %s' % new_name, user, user_ip)
     return HttpResponse(make_json_respond('OKAY'))
 
 def get_recomm(request):
     gag_id, user, user_ip, is_valid = get_basic_info(request)
     if not is_valid:
-        log.put(gag_id, user, user_ip, 'GET_RECOMM', False, 'key invalid')
+        mgr.log.add('get recomm', 'invalid', user, user_ip)
         return HttpResponse(make_json_respond('INVALID'))
 
     excl_recomm_ids = request.GET.get('excl_recomm_ids', '').split(',')
     excl_recomm_ids = [int(recomm_id) for recomm_id in excl_recomm_ids if re.match(r'^\d+$', recomm_id)]
 
     recomms = dictt.get_recomm(gag_id, user, excl_recomm_ids)
-    if recomms == None:
-        log.put(gag_id, user, user_ip, 'GET_RECOMM', True, 'something went wrong')
-        return HttpResponse(make_json_respond('FAIL'))
-    log.put(gag_id, user, user_ip, 'GET_RECOMM', True, 'got %d recomms' % len(recomms))
+    mgr.log.add('get recomm',
+                'gag_id: %s, excl_recomm_ids: %s, got %d recomms' % (gag_id, excl_recomm_ids, len(recomms)),
+                user, user_ip)
     return HttpResponse(make_json_respond('OKAY', recomms))
 
 def hate_recomm(request):
     gag_id, user, user_ip, is_valid = get_basic_info(request)
     if not is_valid:
+        mgr.log.add('hate recomm', 'invalid', user, user_ip)
         return HttpResponse(make_json_respond('INVALID'))
 
     word_id = request.GET.get('word_id', None)
 
     word = mgr.word.get(word_id=word_id)
     success = dictt.delete_recomm(word, gag_id, user)
+    mgr.log.add('hate recomm',
+                'gag_id: %s, word: %s, sucess: %s' % (gag_id, word.id if word else None, bool(success)),
+                user, user_ip)
     if not success:
         return HttpResponse(make_json_respond('FAIL'))
     return HttpResponse(make_json_respond('OKAY'))
@@ -137,12 +141,16 @@ def hate_recomm(request):
 def id_recomm(request):
     gag_id, user, user_ip, is_valid = get_basic_info(request)
     if not is_valid:
+        mgr.log.add('id recomm', 'invalid', user, user_ip)
         return HttpResponse(make_json_respond('INVALID'))
 
     word_str = request.GET.get('word_str', '')
 
     word = mgr.word.get(word_str=word_str)
     success = word
+    mgr.log.add('id recomm',
+                'gag_id: %s, word: %s, sucess: %s' % (gag_id, word.id if word else None, bool(success)),
+                user, user_ip)
     if not success:
         return HttpResponse(make_json_respond('FAIL'))
     return HttpResponse(make_json_respond('OKAY', {'id': word.id}))
@@ -150,6 +158,7 @@ def id_recomm(request):
 def query_explain(request):
     gag_id, user, user_ip, is_valid = get_basic_info(request)
     if not is_valid:
+        mgr.log.add('query explain', 'invalid', user, user_ip)
         return HttpResponse(make_json_respond('INVALID'))
 
     word_id = request.GET.get('word_id', None)
@@ -163,19 +172,24 @@ def query_explain(request):
         word = mgr.word.get(word_str=word_str)
 
     expls = dictt.get_expls(word, gag_id, user, excl_expl_ids)
-    if expls == None:
-        return HttpResponse(make_json_respond('FAIL'))
+    mgr.log.add('query explain',
+                'gag_id: %s, word: %s, got %d explains' % (gag_id, word.id if word else None, len(expls)),
+                user, user_ip)
     return HttpResponse(make_json_respond('OKAY', expls))
 
 def hate_explain(request):
     gag_id, user, user_ip, is_valid = get_basic_info(request)
     if not is_valid:
+        mgr.log.add('hate explain', 'invalid', user, user_ip)
         return HttpResponse(make_json_respond('INVALID'))
 
     expl_id = request.GET.get('expl_id', None)
     expl = mgr.explain.get(expl_id=expl_id)
 
     success = dictt.delete_expl(expl, gag_id, user)
+    mgr.log.add('hate explain',
+                'gag_id: %s, expl: %s, success: %s' % (gag_id, expl.id if expl else None, bool(success)),
+                user, user_ip)
     if not success:
         return HttpResponse(make_json_respond('FAIL'))
     return HttpResponse(make_json_respond('OKAY'))
@@ -183,12 +197,16 @@ def hate_explain(request):
 def like_explain(request):
     gag_id, user, user_ip, is_valid = get_basic_info(request)
     if not is_valid:
+        mgr.log.add('like explain', 'invalid', user, user_ip)
         return HttpResponse(make_json_respond('INVALID'))
 
     expl_id = request.GET.get('expl_id', None)
     expl = mgr.explain.get(expl_id=expl_id)
 
     success = dictt.like_expl(expl, gag_id, user)
+    mgr.log.add('like explain',
+                'gag_id: %s, expl: %s, success: %s' % (gag_id, expl.id if expl else None, bool(success)),
+                user, user_ip)
     if not success:
         return HttpResponse(make_json_respond('FAIL'))
     return HttpResponse(make_json_respond('OKAY'))
@@ -196,12 +214,16 @@ def like_explain(request):
 def neutral_explain(request):
     gag_id, user, user_ip, is_valid = get_basic_info(request)
     if not is_valid:
+        mgr.log.add('neutral explain', 'invalid', user, user_ip)
         return HttpResponse(make_json_respond('INVALID'))
 
     expl_id = request.GET.get('expl_id', None)
     expl = mgr.explain.get(expl_id=expl_id)
 
     success = dictt.neutral_expl(expl, gag_id, user)
+    mgr.log.add('neutral explain',
+                'gag_id: %s, expl: %s, success: %s' % (gag_id, expl.id if expl else None, bool(success)),
+                user, user_ip)
     if not success:
         return HttpResponse(make_json_respond('FAIL'))
     return HttpResponse(make_json_respond('OKAY'))
@@ -209,16 +231,20 @@ def neutral_explain(request):
 def provide_explain(request):
     gag_id, user, user_ip, is_valid = get_basic_info(request)
     if not is_valid:
+        mgr.log.add('provide explain', 'invalid', user, user_ip)
         return HttpResponse(make_json_respond('INVALID'))
 
     word_id = request.GET.get('word_id', None)
     expl_str = request.GET.get('expl_str', '')
 
     word = mgr.word.get(word_id=word_id)
-    expl = dictt.provide_expl(expl_str, word)
+    expls = dictt.provide_expl(expl_str, word)
 
-    success = expl is not None
+    success = expls
+    mgr.log.add('provide explain',
+                'gag_id: %s, expls: %s, success: %s' % (gag_id, [expl['id'] if expl else None for expl in expls], bool(success)),
+                user, user_ip)
     if not success:
         return HttpResponse(make_json_respond('FAIL'))
-    return HttpResponse(make_json_respond('OKAY', expl))
+    return HttpResponse(make_json_respond('OKAY', expls))
 
