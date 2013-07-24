@@ -251,10 +251,10 @@ class UserMgr(Manager):
         user.save()
 
 class LogMgr(Manager):
-    def add(self, event_type, event_desc, user_id=None, user_ip=None):
+    def add(self, event_type, event_desc, user=None, user_ip=None):
         log = models.Log(event_type=event_type,
                          event_desc=event_desc,
-                         user_id=user_id,
+                         user=user,
                          user_ip=user_ip)
         log.save()
 

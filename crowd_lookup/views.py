@@ -6,12 +6,10 @@ from django.http import HttpResponse
 from django.shortcuts import render_to_response
 import models
 from dictionary import NineDict
-from logger import Logger
 from tools import get_basic_info, make_json_respond, gen_user_info, get_client_ip
 from manager import AllManagers
 
 dictt = NineDict()
-log = Logger()
 mgr = AllManagers()
 
 def index(request):
