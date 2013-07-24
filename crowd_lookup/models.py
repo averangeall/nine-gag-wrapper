@@ -67,13 +67,9 @@ class Prefer(models.Model):
     val_type = models.CharField(max_length=2, choices=VAL_TYPE_CHOICES)
 
 class Log(models.Model):
-    LOG_ENTER_WORD = 'EN'
-    LOG_FIND_EXPLAIN_ONLINE = 'FI'
-    LOG_TYPE_CHOICES = (
-        (LOG_ENTER_WORD, 'enter a word by user'),
-        (LOG_FIND_EXPLAIN_ONLINE, 'find explanation from internet'),
-    )
-
-    log_type = models.CharField(max_length=2, choices=LOG_TYPE_CHOICES)
-    timestamp = models.DateTimeField()
+    event_type = models.TextField()
+    event_desc = models.TextField()
+    user = models.ForeignKey(User, null=True)
+    user_ip = models.TextField(null=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
 

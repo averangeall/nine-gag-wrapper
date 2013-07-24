@@ -246,6 +246,14 @@ class UserMgr(Manager):
         user = models.User(id=user_id, key=user_key, name=None)
         user.save()
 
+class LogMgr(Manager):
+    def add(self, event_type, event_desc, user_id=None, user_ip=None):
+        log = models.Log(event_type=event_type,
+                         event_desc=event_desc,
+                         user_id=user_id,
+                         user_ip=user_ip)
+        log.save()
+
 class AllManagers:
     def __init__(self):
         self.word = WordMgr()
@@ -253,4 +261,5 @@ class AllManagers:
         self.recomm = RecommMgr()
         self.prefer = PreferMgr()
         self.user = UserMgr()
+        self.log = LogMgr()
 

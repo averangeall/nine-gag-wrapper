@@ -1,7 +1,7 @@
 import json
 import random
 import models
-from manager import UserMgr
+import manager
 
 def _check_valid(gag_id, user, valid_key):
     if gag_id in [None, ''] or user  == None:
@@ -16,7 +16,7 @@ def _get_client_ip(request):
         return request.META.get('REMOTE_ADDR')
 
 def get_basic_info(request):
-    user_mgr = UserMgr()
+    user_mgr = manager.UserMgr()
 
     gag_id = request.GET.get('gag_id', None)
     user_id = request.GET.get('user_id', None)
@@ -40,7 +40,7 @@ def _make_dicts(objs):
     return [obj.to_dict() for obj in objs]
 
 def gen_user_info():
-    user_mgr = UserMgr()
+    user_mgr = manager.UserMgr()
     while True:
         user_id = random.randint(1, 2 ** 30)
         if user_mgr.get(user_id) == None:
