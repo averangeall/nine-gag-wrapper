@@ -135,7 +135,12 @@ class UrbanDictionary(BaseBrowser):
         word = re.sub(r'\s+', '+', word)
         url = 'http://www.urbandictionary.com/define.php?term=%s' % word
         soup = self._get_page_soup(url)
-        eng_defi = soup.find('div', {'class': 'definition'}).string
+        div = soup.find('div', {'class': 'definition'})
+        if div == None:
+            return []
+        eng_defi = div.string
+        if eng_defi == None:
+            return []
         google_translate = GoogleTranslate()
         trans = google_translate.query(eng_defi)
         zh_defi = trans[0][0] if trans else ''
