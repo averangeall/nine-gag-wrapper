@@ -2,7 +2,7 @@ import re
 import mimetypes
 import models
 import point
-#import tools
+import tools
 
 class Manager:
     pass
@@ -16,7 +16,7 @@ class WordMgr(Manager):
         assert False
 
     def _get_by_str(self, word_str):
-        #word_str = tools.normalize_str(word_str)
+        word_str = tools.normalize_str(word_str)
         if word_str == '':
             return None
         words = models.Word.objects.filter(content=word_str)
@@ -141,7 +141,7 @@ class ExplainMgr(Manager):
 
     def _guess_repr_type(self, expl_str):
         mime = mimetypes.guess_type(expl_str)
-        if mime[1] and 'image' in mime[1]:
+        if mime[0] and 'image' in mime[0]:
             return models.Explain.REPR_IMAGE
         return models.Explain.REPR_TEXT
 

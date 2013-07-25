@@ -1,5 +1,7 @@
 import json
 import random
+import urllib
+import imghdr
 import models
 import manager
 
@@ -33,7 +35,7 @@ def make_json_respond(status, respond=None):
         res['respond'] = respond
     return json.dumps(res)
 
-def normalize_str(self, string):
+def normalize_str(string):
     return string.strip().lower()
 
 def _make_dicts(objs):
@@ -54,3 +56,9 @@ def gen_user_info():
         user_key += random.choice(choices)
 
     return user_id, user_key
+
+def is_image(url):
+    tmp_fname = '/tmp/%d' % random.randint(0, 99999)
+    urllib.urlretrieve(url, tmp_fname)
+    return imghdr.what(tmp_fname) != None
+

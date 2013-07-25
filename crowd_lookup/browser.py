@@ -6,6 +6,7 @@ import mechanize
 import cookielib
 from BeautifulSoup import BeautifulSoup
 import models
+import tools
 
 class BaseBrowser:
     def __init__(self):
@@ -87,13 +88,13 @@ class GoogleImage(BaseBrowser):
     def query(self, word):
         word = re.sub(r'\s+', '+', word)
         url = 'https://www.google.com.tw/search?um=1&hl=zh-TW&biw=1366&bih=682&tbm=isch&q=%s&oq=%s' % (word.lower(), word.lower())
-        print url
         soup = self._get_page_soup(url)
         res = []
         try:
             content = str(soup)
             imgs = re.findall(r'imgurl=(.+?)&amp', content)
             for img in imgs:
+                #if tools.is_image(img):
                 res.append((img, url, models.Explain.REPR_IMAGE))
         except:
             raise
