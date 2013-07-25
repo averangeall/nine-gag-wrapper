@@ -47,7 +47,7 @@ class NineDict:
     def provide_expl(self, expl_str, word, user):
         expl = self._mgr.explain.add(expl_str=expl_str, word=word, init_score=1.0, source='U%d' % user.id)
         if not expl:
-            return None
+            return []
         return tools._make_dicts([expl])
 
     def _get_expls_from_web(self, word, gag_id):
