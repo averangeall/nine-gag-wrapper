@@ -58,14 +58,14 @@ class NineDict:
         ud_upper_bound = point.UD_NO_GT_EXPL_INIT_POINT if num_expls == 0 else point.UD_WITH_GT_EXPL_INIT_POINT
         self._get_expls_from_browser(word, self._urban_dictionary, ud_upper_bound)
 
-        gi_upper_bound = point.GI_EXPL_INIT_POINT
-        self._get_expls_from_browser(word, self._google_image, gi_upper_bound)
-
         yt_upper_bound = point.YT_EXPL_INIT_POINT
         self._get_expls_from_browser(word, self._youtube, yt_upper_bound)
 
         qm_upper_bound = point.QM_EXPL_INIT_POINT
-        self._get_expls_from_browser(word, self._quick_meme, qm_upper_bound)
+        num_expls = self._get_expls_from_browser(word, self._quick_meme, qm_upper_bound)
+
+        gi_upper_bound = point.GI_NO_QM_EXPL_INIT_POINT if num_expls == 0 else point.GI_WITH_QM_EXPL_INIT_POINT
+        self._get_expls_from_browser(word, self._google_image, gi_upper_bound)
 
     def _get_expls_from_browser(self, word, br, upper_bound):
         expl_tuples = br.query(word.content)
