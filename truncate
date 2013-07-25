@@ -1,7 +1,5 @@
 TRUNCATE TABLE crowd_lookup_explain CASCADE;
 TRUNCATE TABLE crowd_lookup_log CASCADE;
 TRUNCATE TABLE crowd_lookup_prefer CASCADE;
-TRUNCATE TABLE crowd_lookup_preferrecord CASCADE;
 TRUNCATE TABLE crowd_lookup_recomm CASCADE;
-TRUNCATE TABLE crowd_lookup_recommrecord CASCADE;
 TRUNCATE TABLE crowd_lookup_word CASCADE;

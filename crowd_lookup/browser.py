@@ -6,6 +6,7 @@ import mechanize
 import cookielib
 from BeautifulSoup import BeautifulSoup
 import models
+import tools
 
 class BaseBrowser:
     def __init__(self):
@@ -87,13 +88,13 @@ class GoogleImage(BaseBrowser):
     def query(self, word):
         word = re.sub(r'\s+', '+', word)
         url = 'https://www.google.com.tw/search?um=1&hl=zh-TW&biw=1366&bih=682&tbm=isch&q=%s&oq=%s' % (word.lower(), word.lower())
-        print url
         soup = self._get_page_soup(url)
         res = []
         try:
             content = str(soup)
             imgs = re.findall(r'imgurl=(.+?)&amp', content)
             for img in imgs:
+                #if tools.is_image(img):
                 res.append((img, url, models.Explain.REPR_IMAGE))
         except:
             raise
@@ -135,7 +136,12 @@ class UrbanDictionary(BaseBrowser):
         word = re.sub(r'\s+', '+', word)
         url = 'http://www.urbandictionary.com/define.php?term=%s' % word
         soup = self._get_page_soup(url)
-        eng_defi = soup.find('div', {'class': 'definition'}).string
+        div = soup.find('div', {'class': 'definition'})
+        if div == None:
+            return []
+        eng_defi = div.string
+        if eng_defi == None:
+            return []
         google_translate = GoogleTranslate()
         trans = google_translate.query(eng_defi)
         zh_defi = trans[0][0] if trans else ''
@@ -161,6 +167,37 @@ class YouTube(BaseBrowser):
 
     def get_name(self):
         return 'YouTube'
+
+class QuickMeme(BaseBrowser):
+    def query(self, word):
+        search_word = re.sub(r'\s+', '+', word)
+        search_url = 'http://www.quickmeme.com/search/?q=%s' % search_word
+        soup = self._get_page_soup(search_url)
+        divs = soup.findAll('div', {'class': 'memeThumb'})
+        best_div = None
+        best_dist = 5
+        for div in divs:
+            battle = div.find('img')['alt']
+            dist = tools.minEditDist(word.lower().strip(), battle.lower().strip())
+            if dist < best_dist:
+                best_dist = dist
+                best_div = div
+        print best_dist
+        if not best_div:
+            return []
+        best_a = best_div.find('a')
+        extra_url = best_a['href']
+        target_url = 'http://www.quickmeme.com' + extra_url
+
+        content = self._get_page_content(target_url)
+        imgs = re.findall(r'http://t.qkme.me/\w+\.jpg', content)
+        res = []
+        for img in imgs:
+            res.append((img, target_url, models.Explain.REPR_IMAGE))
+        return res
+
+    def get_name(self):
+        return 'Quick Meme'
 
 if __name__ == '__main__':
     br = GoogleImage()

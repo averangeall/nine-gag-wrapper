@@ -9,14 +9,6 @@ class Word(models.Model):
         res['content'] = self.content
         return res
 
-class Recomm(models.Model):
-    gag_id = models.TextField()
-    word = models.ForeignKey(Word)
-    score = models.FloatField()
-
-    def to_dict(self):
-        return self.word.to_dict()
-
 class Explain(models.Model):
     REPR_TEXT = 'TE'
     REPR_IMAGE = 'IM'
@@ -32,6 +24,7 @@ class Explain(models.Model):
     content = models.TextField()
     source = models.TextField()
     link = models.TextField()
+    init_score = models.FloatField()
 
     def to_dict(self):
         res = {}
@@ -42,53 +35,41 @@ class Explain(models.Model):
         res['link'] = self.link
         return res
 
-class Prefer(models.Model):
-    expl = models.ForeignKey(Explain)
-    score = models.FloatField()
-
-    def to_dict(self):
-        return self.expl.to_dict()
-
 class User(models.Model):
     id = models.IntegerField(primary_key=True)
     key = models.TextField()
     name = models.TextField()
 
-class RecommRecord(models.Model):
+class Recomm(models.Model):
     VAL_POSITIVE = 'PO'
     VAL_NEGATIVE = 'NE'
     VAL_TYPE_CHOICES = (
         (VAL_POSITIVE, 'positive'),
         (VAL_NEGATIVE, 'negative'),
-    )
-
-    user = models.ForeignKey(User)
-    recomm = models.ForeignKey(Recomm)
-    val_type = models.CharField(max_length=2, choices=VAL_TYPE_CHOICES)
-
-class PreferRecord(models.Model):
-    VAL_POSITIVE = 'PO'
-    VAL_NEGATIVE = 'NE'
-    VAL_PLAIN = 'PL'
-    VAL_TYPE_CHOICES = (
-        (VAL_POSITIVE, 'positive'),
-        (VAL_NEGATIVE, 'negative'),
-        (VAL_PLAIN, 'plain'),
     )
 
     user = models.ForeignKey(User)
     gag_id = models.TextField()
-    prefer = models.ForeignKey(Prefer)
+    word = models.ForeignKey(Word)
+    val_type = models.CharField(max_length=2, choices=VAL_TYPE_CHOICES)
+
+class Prefer(models.Model):
+    VAL_POSITIVE = 'PO'
+    VAL_NEGATIVE = 'NE'
+    VAL_TYPE_CHOICES = (
+        (VAL_POSITIVE, 'positive'),
+        (VAL_NEGATIVE, 'negative'),
+    )
+
+    user = models.ForeignKey(User)
+    gag_id = models.TextField()
+    expl = models.ForeignKey(Explain)
     val_type = models.CharField(max_length=2, choices=VAL_TYPE_CHOICES)
 
 class Log(models.Model):
-    LOG_ENTER_WORD = 'EN'
-    LOG_FIND_EXPLAIN_ONLINE = 'FI'
-    LOG_TYPE_CHOICES = (
-        (LOG_ENTER_WORD, 'enter a word by user'),
-        (LOG_FIND_EXPLAIN_ONLINE, 'find explanation from internet'),
-    )
-
-    log_type = models.CharField(max_length=2, choices=LOG_TYPE_CHOICES)
-    timestamp = models.DateTimeField()
+    event_type = models.TextField()
+    event_desc = models.TextField()
+    user = models.ForeignKey(User, null=True)
+    user_ip = models.TextField(null=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
 
