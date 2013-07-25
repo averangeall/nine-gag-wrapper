@@ -39,8 +39,11 @@ UD_NO_GT_EXPL_INIT_POINT = 1.2
 UD_WITH_GT_EXPL_INIT_POINT = 0.3
 
 #     what is the maximum initial point of a explain from google image?
-GI_EXPL_INIT_POINT = 1.0
+GI_EXPL_INIT_POINT = 1.1
 
 #     what is the maximum initial point of a explain from urban dictionary?
 YT_EXPL_INIT_POINT = 0.7
+
+#     what is the maximum initial point of a explain from quick meme?
+QM_EXPL_INIT_POINT = 1.0
 

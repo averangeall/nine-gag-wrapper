@@ -11,6 +11,7 @@ class NineDict:
         self._google_image = browser.GoogleImage()
         self._urban_dictionary = browser.UrbanDictionary()
         self._youtube = browser.YouTube()
+        self._quick_meme = browser.QuickMeme()
 
         self._mgr = AllManagers()
 
@@ -62,6 +63,9 @@ class NineDict:
 
         yt_upper_bound = point.YT_EXPL_INIT_POINT
         self._get_expls_from_browser(word, self._youtube, yt_upper_bound)
+
+        qm_upper_bound = point.QM_EXPL_INIT_POINT
+        self._get_expls_from_browser(word, self._quick_meme, qm_upper_bound)
 
     def _get_expls_from_browser(self, word, br, upper_bound):
         expl_tuples = br.query(word.content)

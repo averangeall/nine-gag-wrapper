@@ -168,6 +168,37 @@ class YouTube(BaseBrowser):
     def get_name(self):
         return 'YouTube'
 
+class QuickMeme(BaseBrowser):
+    def query(self, word):
+        search_word = re.sub(r'\s+', '+', word)
+        search_url = 'http://www.quickmeme.com/search/?q=%s' % search_word
+        soup = self._get_page_soup(search_url)
+        divs = soup.findAll('div', {'class': 'memeThumb'})
+        best_div = None
+        best_dist = 5
+        for div in divs:
+            battle = div.find('img')['alt']
+            dist = tools.minEditDist(word.lower().strip(), battle.lower().strip())
+            if dist < best_dist:
+                best_dist = dist
+                best_div = div
+        print best_dist
+        if not best_div:
+            return []
+        best_a = best_div.find('a')
+        extra_url = best_a['href']
+        target_url = 'http://www.quickmeme.com' + extra_url
+
+        content = self._get_page_content(target_url)
+        imgs = re.findall(r'http://t.qkme.me/\w+\.jpg', content)
+        res = []
+        for img in imgs:
+            res.append((img, target_url, models.Explain.REPR_IMAGE))
+        return res
+
+    def get_name(self):
+        return 'Quick Meme'
+
 if __name__ == '__main__':
     br = GoogleImage()
     for a in br.query('hello'):
