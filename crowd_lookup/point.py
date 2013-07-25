@@ -36,7 +36,7 @@ GT_MULTIPLE_EXPL_INIT_POINT = 0.5
 
 #     what is the maximum initial point of a explain from urban dictionary?
 UD_NO_GT_EXPL_INIT_POINT = 1.2
-UD_WITH_GT_EXPL_INIT_POINT = 0.8
+UD_WITH_GT_EXPL_INIT_POINT = 0.3
 
 #     what is the maximum initial point of a explain from google image?
 GI_EXPL_INIT_POINT = 1.0
