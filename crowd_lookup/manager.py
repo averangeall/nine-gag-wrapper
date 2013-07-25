@@ -1,3 +1,4 @@
+import re
 import mimetypes
 import models
 import point
@@ -127,7 +128,7 @@ class ExplainMgr(Manager):
             expl = expls[0]
         else:
             repr_type = kwargs['repr_type'] if 'repr_type' in kwargs else self._guess_repr_type(expl_str)
-            source = kwargs['source'] if 'source' in kwargs else 'User Provide'
+            source = kwargs['source'] if 'source' in kwargs else 'Unknown'
             link = kwargs['link'] if 'link' in kwargs else ''
             expl = models.Explain(word=word,
                                   repr_type=repr_type,
@@ -140,7 +141,7 @@ class ExplainMgr(Manager):
 
     def _guess_repr_type(self, expl_str):
         mime = mimetypes.guess_type(expl_str)
-        if 'image' in mime[1]:
+        if mime[1] and 'image' in mime[1]:
             return models.Explain.REPR_IMAGE
         return models.Explain.REPR_TEXT
 
@@ -226,7 +227,13 @@ class PreferMgr(Manager):
             else:
                 assert False
 
-            if prefer.user.id == 0:
+            mo = re.match(r'^U(\d+)$', prefer.expl.source)
+            if mo and int(mo.group(1)) == prefer.user.id:
+                if prefer.val_type == models.Prefer.VAL_NEGATIVE:
+                    points = -point.SELF_HATE_EXPL_POINT
+                else:
+                    points = 0.0
+            elif prefer.user.id == 0:
                 points = point.ADMIN_EXPL_VAL_POINT * valence
             else:
                 points = point.USER_EXPL_VAL_POINT * valence

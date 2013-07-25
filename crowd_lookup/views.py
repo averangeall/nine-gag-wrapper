@@ -68,7 +68,7 @@ def index(request):
                          '/lookup/explain/neutral/?' + urlencode(expl_id_args)))
         if expl_str != '':
             expl_str_args = dict(word_id_args, expl_str=expl_str)
-            urls.append(('provide explain: %s, %s' % (word_id, expl_str),
+            urls.append(('provide explain: %s, %s' % (word_id, expl_str.decode('utf8')),
                          '/lookup/explain/provide/?' + urlencode(expl_str_args)))
     dictt = {}
     dictt['gag_id'] = gag_id
@@ -238,7 +238,7 @@ def provide_explain(request):
     expl_str = request.GET.get('expl_str', '')
 
     word = mgr.word.get(word_id=word_id)
-    expls = dictt.provide_expl(expl_str, word)
+    expls = dictt.provide_expl(expl_str, word, user)
 
     success = expls
     mgr.log.add('provide explain',
