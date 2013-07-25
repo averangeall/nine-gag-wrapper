@@ -46,7 +46,11 @@ class NineDict:
         return self._mgr.prefer.going_plain(expl, gag_id, user)
 
     def provide_expl(self, expl_str, word, user):
-        expl = self._mgr.explain.add(expl_str=expl_str, word=word, init_score=1.0, source='U%d' % user.id)
+        if user.id == 0:
+            init_score = point.ADMIN_EXPL_INIT_POINT
+        else:
+            init_score = point.USER_EXPL_INIT_POINT
+        expl = self._mgr.explain.add(expl_str=expl_str, word=word, init_score=init_score, source='U%d' % user.id)
         if not expl:
             return []
         return tools._make_dicts([expl])
