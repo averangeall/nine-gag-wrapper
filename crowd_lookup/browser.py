@@ -157,6 +157,8 @@ class YouTube(BaseBrowser):
         content = self._get_page_content(url)
         search = json.loads(content)
         res = []
+        if 'feed' not in search or 'entry' not in search['feed']:
+            return []
         for entry in search['feed']['entry']:
             info = entry['id']['$t']
             mo = re.match('.+?video:(.+)', info)
