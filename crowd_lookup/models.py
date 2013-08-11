@@ -39,6 +39,8 @@ class User(models.Model):
     id = models.IntegerField(primary_key=True)
     key = models.TextField()
     name = models.TextField()
+    score = models.IntegerField()
+    coin = models.IntegerField()
 
 class Recomm(models.Model):
     VAL_POSITIVE = 'PO'
