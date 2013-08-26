@@ -119,7 +119,7 @@ def get_recomm(request):
     mgr.log.add('get recomm',
                 'gag_id: %s, excl_recomm_ids: %s, got %d recomms' % (gag_id, excl_recomm_ids, len(recomms)),
                 user, user_ip)
-    return HttpResponse(make_json_respond('OKAY', recomms))
+    return HttpResponse(make_json_respond('OKAY', {'recomms': recomms}))
 
 def hate_recomm(request):
     gag_id, user, user_ip, is_valid = get_basic_info(request)
@@ -175,7 +175,7 @@ def query_explain(request):
     mgr.log.add('query explain',
                 'gag_id: %s, word: %s, got %d explains' % (gag_id, word.id if word else None, len(expls)),
                 user, user_ip)
-    return HttpResponse(make_json_respond('OKAY', expls))
+    return HttpResponse(make_json_respond('OKAY', {'word_id': word.id, 'expls': expls}))
 
 def hate_explain(request):
     gag_id, user, user_ip, is_valid = get_basic_info(request)
@@ -246,5 +246,5 @@ def provide_explain(request):
                 user, user_ip)
     if not success:
         return HttpResponse(make_json_respond('FAIL'))
-    return HttpResponse(make_json_respond('OKAY', expls))
+    return HttpResponse(make_json_respond('OKAY'))
 
