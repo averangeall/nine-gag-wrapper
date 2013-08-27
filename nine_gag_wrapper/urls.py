@@ -22,6 +22,9 @@ urlpatterns = patterns('',
     url(r'^lookup/explain/neutral/$', 'crowd_lookup.views.neutral_explain'),
     url(r'^lookup/explain/provide/$', 'crowd_lookup.views.provide_explain'),
 
+    url(r'^lookup/image/avatar/$', 'crowd_lookup.views.avatar_image'),
+    url(r'^lookup/image/treature/$', 'crowd_lookup.views.treature_image'),
+
     # Examples:
     # url(r'^$', 'nine_gag_wrapper.views.home', name='home'),
     # url(r'^nine_gag_wrapper/', include('nine_gag_wrapper.foo.urls')),

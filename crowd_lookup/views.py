@@ -32,6 +32,8 @@ def index(request):
                  '/lookup/recomm/get/?' + urlencode(default_args)))
     urls.append(('info user',
                  '/lookup/user/info/?' + urlencode(default_args)))
+    urls.append(('avatar image',
+                 '/lookup/image/avatar/?' + urlencode(default_args)))
 
     if new_name != '':
         new_name_args = dict(default_args, new_name=new_name)
@@ -259,4 +261,24 @@ def provide_explain(request):
     if not success:
         return HttpResponse(make_json_respond('FAIL'))
     return HttpResponse(make_json_respond('OKAY'))
+
+def avatar_image(request):
+    gag_id, user, user_ip, is_valid = get_basic_info(request)
+    if not is_valid:
+        mgr.log.add('avatar image', 'invalid', user, user_ip)
+        return HttpResponse(make_json_respond('INVALID'))
+
+    if not user.avatar:
+        fr = open('crowd_lookup/images/avatars/mario-big-man.png')
+    else:
+        fr = open('crowd_lookup/images/avatars/' + user.avatar + '.png')
+
+    mgr.log.add('avatar image', 'avatar: %s' % user.avatar, user, user_ip)
+    return HttpResponse(fr.read(), mimetype='image/png')
+
+def treasure_image(request):
+    gag_id, user, user_ip, is_valid = get_basic_info(request)
+    if not is_valid:
+        mgr.log.add('treasure image', 'invalid', user, user_ip)
+        return HttpResponse(make_json_respond('INVALID'))
 
