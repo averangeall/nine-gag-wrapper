@@ -290,13 +290,16 @@ def treasure_image(request):
 
     treasure = request.GET.get('treasure', None)
 
-    fname = 'crowd_lookup/images/treasures/' + treasure + '.png'
+    enableds = user.treasures.split(',')
+    suffix = 'enabled' if treasure in enableds else 'disabled'
+
+    fname = 'crowd_lookup/images/treasures/' + treasure + '-' + suffix + '.png'
     if not os.path.exists(fname):
         mgr.log.add('avatar image', 'no such treasure', user, user_ip)
         blank = 'R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=='
         return HttpResponse(blank.decode('base64'), mimetype='image/gif')
 
-    fr = open('crowd_lookup/images/treasures/' + treasure + '.png')
+    fr = open(fname)
     mgr.log.add('treasure image', 'treasure: %s' % treasure, user, user_ip)
     return HttpResponse(fr.read(), mimetype='image/png')
 
