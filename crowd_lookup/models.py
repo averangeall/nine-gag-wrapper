@@ -41,6 +41,8 @@ class User(models.Model):
     name = models.TextField()
     score = models.IntegerField()
     coin = models.IntegerField()
+    avatar = models.TextField()
+    treasures = models.TextField()
 
 class Recomm(models.Model):
     VAL_POSITIVE = 'PO'

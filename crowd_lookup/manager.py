@@ -252,8 +252,8 @@ class UserMgr(Manager):
         except:
             return None
 
-    def create(self, user_id, user_key):
-        user = models.User(id=user_id, key=user_key, name=None)
+    def create(self, user_id, user_key, user_name):
+        user = models.User(id=user_id, key=user_key, name=user_name, score=0, coin=0, avatar=None, treasures='')
         user.save()
 
     def rename(self, user, new_name):

@@ -10,6 +10,7 @@ urlpatterns = patterns('',
 
     url(r'^lookup/user/new/$', 'crowd_lookup.views.new_user'),
     url(r'^lookup/user/rename/$', 'crowd_lookup.views.rename_user'),
+    url(r'^lookup/user/info/$', 'crowd_lookup.views.info_user'),
 
     url(r'^lookup/recomm/get/$', 'crowd_lookup.views.get_recomm'),
     url(r'^lookup/recomm/hate/$', 'crowd_lookup.views.hate_recomm'),

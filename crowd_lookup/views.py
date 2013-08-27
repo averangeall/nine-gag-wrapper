@@ -6,7 +6,7 @@ from django.http import HttpResponse
 from django.shortcuts import render_to_response
 import models
 from dictionary import NineDict
-from tools import get_basic_info, make_json_respond, gen_user_info, get_client_ip
+from tools import get_basic_info, make_json_respond, gen_user_info, gen_user_name, get_client_ip
 from manager import AllManagers
 
 dictt = NineDict()
@@ -30,6 +30,8 @@ def index(request):
                  '/lookup/user/new/'))
     urls.append(('get recomm',
                  '/lookup/recomm/get/?' + urlencode(default_args)))
+    urls.append(('info user',
+                 '/lookup/user/info/?' + urlencode(default_args)))
 
     if new_name != '':
         new_name_args = dict(default_args, new_name=new_name)
@@ -90,7 +92,8 @@ def test(request):
 
 def new_user(request):
     user_id, user_key = gen_user_info()
-    mgr.user.create(user_id, user_key)
+    user_name = gen_user_name()
+    mgr.user.create(user_id, user_key, user_name)
     mgr.log.add('generate new user', 'user_id: %s' % user_id, user_ip=get_client_ip(request))
     return HttpResponse(make_json_respond('OKAY', {'id': user_id, 'key': user_key}))
 
@@ -105,6 +108,15 @@ def rename_user(request):
     mgr.user.rename(user, new_name)
     mgr.log.add('rename user', 'new_name: %s' % new_name, user, user_ip)
     return HttpResponse(make_json_respond('OKAY'))
+
+def info_user(request):
+    gag_id, user, user_ip, is_valid = get_basic_info(request)
+    if not is_valid:
+        mgr.log.add('info user', 'invalid', user, user_ip)
+        return HttpResponse(make_json_respond('INVALID'))
+
+    mgr.log.add('info user', 'name: %s, score: %s, coin: %s' % (user.name, user.score, user.coin), user, user_ip)
+    return HttpResponse(make_json_respond('OKAY', {'name': user.name, 'score': user.score, 'coin': user.coin}))
 
 def get_recomm(request):
     gag_id, user, user_ip, is_valid = get_basic_info(request)
