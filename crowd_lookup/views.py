@@ -1,5 +1,6 @@
 # Create your views here.
 
+import os
 import re
 from urllib import urlencode
 from django.http import HttpResponse
@@ -17,6 +18,7 @@ def index(request):
     user_key = 'lsopa7KtFmsJWv6UlZ78ZJ0z0Gsk5Qq3'
     gag_id = request.GET.get('gag_id', 'ajYbzzx').encode('utf8')
     new_name = request.GET.get('new_name', '').encode('utf8')
+    treasure = request.GET.get('treasure', '').encode('utf8')
     word_str = request.GET.get('word_str', '').encode('utf8')
     word_id = request.GET.get('word_id', None)
     expl_id = request.GET.get('expl_id', None)
@@ -39,6 +41,11 @@ def index(request):
         new_name_args = dict(default_args, new_name=new_name)
         urls.append(('rename user: %s' % new_name,
                      '/lookup/user/rename/?' + urlencode(new_name_args)))
+
+    if treasure != '':
+        treasure_args = dict(default_args, treasure=treasure)
+        urls.append(('treasure image: %s' % treasure,
+                     '/lookup/image/treasure/?' + urlencode(treasure_args)))
 
     if excl_recomm_ids != '':
         excl_recomm_ids_args = dict(default_args, excl_recomm_ids=excl_recomm_ids)
@@ -268,10 +275,9 @@ def avatar_image(request):
         mgr.log.add('avatar image', 'invalid', user, user_ip)
         return HttpResponse(make_json_respond('INVALID'))
 
-    if not user.avatar:
-        fr = open('crowd_lookup/images/avatars/mario-big-man.png')
-    else:
-        fr = open('crowd_lookup/images/avatars/' + user.avatar + '.png')
+    avatar = user.avatar if user.avatar else 'mario-big-man'
+    fname = 'crowd_lookup/images/avatars/' + avatar + '.png'
+    fr = open(fname)
 
     mgr.log.add('avatar image', 'avatar: %s' % user.avatar, user, user_ip)
     return HttpResponse(fr.read(), mimetype='image/png')
@@ -281,4 +287,16 @@ def treasure_image(request):
     if not is_valid:
         mgr.log.add('treasure image', 'invalid', user, user_ip)
         return HttpResponse(make_json_respond('INVALID'))
+
+    treasure = request.GET.get('treasure', None)
+
+    fname = 'crowd_lookup/images/treasures/' + treasure + '.png'
+    if not os.path.exists(fname):
+        mgr.log.add('avatar image', 'no such treasure', user, user_ip)
+        blank = 'R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=='
+        return HttpResponse(blank.decode('base64'), mimetype='image/gif')
+
+    fr = open('crowd_lookup/images/treasures/' + treasure + '.png')
+    mgr.log.add('treasure image', 'treasure: %s' % treasure, user, user_ip)
+    return HttpResponse(fr.read(), mimetype='image/png')
 
