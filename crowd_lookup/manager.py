@@ -3,6 +3,7 @@ import mimetypes
 import models
 import point
 import tools
+import treasures
 
 class Manager:
     pass
@@ -258,6 +259,19 @@ class UserMgr(Manager):
 
     def rename(self, user, new_name):
         user.name = new_name
+        user.save()
+
+    def enabled_treasures(self, user):
+        enableds = filter(lambda x: x != '', user.treasures.split(','))
+        return enableds
+
+    def buy_treasure(self, user, treasure):
+        enableds = self.enabled_treasures(user)
+        assert treasure not in enableds
+        enableds.append(treasure)
+        user.treasures = ','.join(enableds)
+        assert user.coin >= treasures.each[treasure]['price']
+        user.coin -= treasures.each[treasure]['price']
         user.save()
 
 class LogMgr(Manager):

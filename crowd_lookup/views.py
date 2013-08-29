@@ -9,6 +9,7 @@ import models
 from dictionary import NineDict
 from tools import get_basic_info, make_json_respond, gen_user_info, gen_user_name, get_client_ip
 from manager import AllManagers
+import treasures
 
 dictt = NineDict()
 mgr = AllManagers()
@@ -36,6 +37,8 @@ def index(request):
                  '/lookup/user/info/?' + urlencode(default_args)))
     urls.append(('avatar image',
                  '/lookup/image/avatar/?' + urlencode(default_args)))
+    urls.append(('info treasure',
+                 '/lookup/treasure/info/?' + urlencode(default_args)))
 
     if new_name != '':
         new_name_args = dict(default_args, new_name=new_name)
@@ -46,6 +49,8 @@ def index(request):
         treasure_args = dict(default_args, treasure=treasure)
         urls.append(('treasure image: %s' % treasure,
                      '/lookup/image/treasure/?' + urlencode(treasure_args)))
+        urls.append(('buy treasure: %s' % treasure,
+                     '/lookup/treasure/buy/?' + urlencode(treasure_args)))
 
     if excl_recomm_ids != '':
         excl_recomm_ids_args = dict(default_args, excl_recomm_ids=excl_recomm_ids)
@@ -84,6 +89,7 @@ def index(request):
     dictt = {}
     dictt['gag_id'] = gag_id
     dictt['new_name'] = new_name
+    dictt['treasure'] = treasure
     dictt['urls'] = urls
     dictt['word_str'] = word_str
     dictt['word_id'] = word_id if word_id is not None else ''
@@ -290,16 +296,65 @@ def treasure_image(request):
 
     treasure = request.GET.get('treasure', None)
 
-    enableds = user.treasures.split(',')
-    suffix = 'enabled' if treasure in enableds else 'disabled'
+    availables = [item['id'] for item in treasures.info]
 
-    fname = 'crowd_lookup/images/treasures/' + treasure + '-' + suffix + '.png'
-    if not os.path.exists(fname):
-        mgr.log.add('avatar image', 'no such treasure', user, user_ip)
+    if treasure not in availables:
+        mgr.log.add('avatar image', 'no such treasure: %s' % treasure, user, user_ip)
         blank = 'R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=='
         return HttpResponse(blank.decode('base64'), mimetype='image/gif')
 
+    enableds = mgr.user.enabled_treasures(user)
+    suffix = 'enabled' if treasure in enableds else 'disabled'
+
+    fname = 'crowd_lookup/images/treasures/' + treasure + '-' + suffix + '.png'
     fr = open(fname)
     mgr.log.add('treasure image', 'treasure: %s' % treasure, user, user_ip)
     return HttpResponse(fr.read(), mimetype='image/png')
+
+def buy_treasure(request):
+    gag_id, user, user_ip, is_valid = get_basic_info(request)
+    if not is_valid:
+        mgr.log.add('buy treasure', 'invalid', user, user_ip)
+        return HttpResponse(make_json_respond('INVALID'))
+
+    treasure = request.GET.get('treasure', None)
+
+    availables = [item['id'] for item in treasures.info]
+    if treasure not in availables:
+        mgr.log.add('buy treasure', 'no such treasure: %s' % treasure, user, user_ip)
+        return HttpResponse(make_json_respond('FAIL'))
+
+    if user.coin < treasures.each[treasure]['price']:
+        mgr.log.add('buy treasure', 'treasure: %s, not enough coins: %s' % (treasure, user.coin), user, user_ip)
+        return HttpResponse(make_json_respond('FAIL'))
+
+    enableds = mgr.user.enabled_treasures(user)
+    if treasure in enableds:
+        mgr.log.add('buy treasure', 'treasure: %s, already bought' % treasure, user, user_ip)
+        return HttpResponse(make_json_respond('FAIL'))
+
+    mgr.user.buy_treasure(user, treasure)
+
+    mgr.log.add('buy treasure', 'treasure: %s, remaining coins: %s' % (treasure, user.coin), user, user_ip)
+    return HttpResponse(make_json_respond('OKAY'))
+
+def info_treasure(request):
+    gag_id, user, user_ip, is_valid = get_basic_info(request)
+    if not is_valid:
+        mgr.log.add('info treasure', 'invalid', user, user_ip)
+        return HttpResponse(make_json_respond('INVALID'))
+
+    enableds = user.treasures.split(',')
+
+    info = []
+    for item in treasures.info:
+        info.append({
+            'id': item['id'],
+            'name': item['name'],
+            'price': item['price'],
+            'enabled': item['id'] in enableds,
+        })
+
+    mgr.log.add('info treasure', '#treasures: %s, enableds: %s' % (len(info), user.treasures), user, user_ip)
+    return HttpResponse(make_json_respond('OKAY', {'info': info}))
 

@@ -25,6 +25,10 @@ urlpatterns = patterns('',
     url(r'^lookup/image/avatar/$', 'crowd_lookup.views.avatar_image'),
     url(r'^lookup/image/treasure/$', 'crowd_lookup.views.treasure_image'),
 
+    url(r'^lookup/treasure/buy/$', 'crowd_lookup.views.buy_treasure'),
+    url(r'^lookup/treasure/use/$', 'crowd_lookup.views.use_treasure'),
+    url(r'^lookup/treasure/info/$', 'crowd_lookup.views.info_treasure'),
+
     # Examples:
     # url(r'^$', 'nine_gag_wrapper.views.home', name='home'),
     # url(r'^nine_gag_wrapper/', include('nine_gag_wrapper.foo.urls')),
