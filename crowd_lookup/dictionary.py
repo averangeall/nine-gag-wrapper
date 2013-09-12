@@ -3,6 +3,7 @@ import models
 import browser
 import tools
 import point
+import threading
 from manager import AllManagers
 
 class NineDict:
@@ -56,6 +57,16 @@ class NineDict:
         return tools._make_dicts([expl])
 
     def _get_expls_from_web(self, word, gag_id):
+        self._get_fast_expls_from_web(word, gag_id)
+
+        th = threading.Thread(target=self._get_complete_expls_from_web, args=[word, gag_id])
+        th.start()
+
+    def _get_fast_expls_from_web(self, word, gag_id):
+        gt_upper_bound = point.GT_SINGLE_EXPL_INIT_POINT if re.match('^[^\s]+$', word.content) else point.GT_MULTIPLE_EXPL_INIT_POINT
+        num_expls = self._get_expls_from_browser(word, self._google_translate, gt_upper_bound)
+
+    def _get_complete_expls_from_web(self, word, gag_id):
         gt_upper_bound = point.GT_SINGLE_EXPL_INIT_POINT if re.match('^[^\s]+$', word.content) else point.GT_MULTIPLE_EXPL_INIT_POINT
         num_expls = self._get_expls_from_browser(word, self._google_translate, gt_upper_bound)
 
