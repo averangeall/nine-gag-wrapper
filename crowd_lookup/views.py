@@ -37,6 +37,10 @@ def index(request):
                  '/lookup/user/info/?' + urlencode(default_args)))
     urls.append(('avatar image',
                  '/lookup/image/avatar/?' + urlencode(default_args)))
+    urls.append(('count notifi',
+                 '/lookup/notifi/count/?' + urlencode(default_args)))
+    urls.append(('get notifi',
+                 '/lookup/notifi/get/?' + urlencode(default_args)))
     urls.append(('info treasure',
                  '/lookup/treasure/info/?' + urlencode(default_args)))
 
@@ -337,6 +341,26 @@ def buy_treasure(request):
 
     mgr.log.add('buy treasure', 'treasure: %s, remaining coins: %s' % (treasure, user.coin), user, user_ip)
     return HttpResponse(make_json_respond('OKAY'))
+
+def count_notifi(request):
+    gag_id, user, user_ip, is_valid = get_basic_info(request)
+    if not is_valid:
+        mgr.log.add('count notifi', 'invalid', user, user_ip)
+        return HttpResponse(make_json_respond('INVALID'))
+
+    cnt = mgr.notifi.get_count(user)
+
+    return HttpResponse(make_json_respond('OKAY', {'count': cnt}))
+
+def get_notifi(request):
+    gag_id, user, user_ip, is_valid = get_basic_info(request)
+    if not is_valid:
+        mgr.log.add('get notifi', 'invalid', user, user_ip)
+        return HttpResponse(make_json_respond('INVALID'))
+
+    notifis = mgr.notifi.get_by_user(user, True)
+
+    return HttpResponse(make_json_respond('OKAY', {'notifis': notifis}))
 
 def info_treasure(request):
     gag_id, user, user_ip, is_valid = get_basic_info(request)

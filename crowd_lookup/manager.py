@@ -304,6 +304,19 @@ class NotifiMgr(Manager):
         former.save()
         latter.save()
 
+    def get_count(self, user):
+        notifis = models.Notifi.objects.filter(user=user, seen=False)
+        return notifis.count()
+
+    def get_by_user(self, user, see=False):
+        notifis = models.Notifi.objects.filter(user=user)
+        dicts = tools._make_dicts(notifis)
+        if see:
+            for notifi in notifis:
+                notifi.seen = True
+                notifi.save()
+        return dicts
+
 class LogMgr(Manager):
     def add(self, event_type, event_desc, user=None, user_ip=None):
         log = models.Log(event_type=event_type,

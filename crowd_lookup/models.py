@@ -80,13 +80,25 @@ class Notifi(models.Model):
 
     evt_type = models.CharField(max_length=4, choices=EVT_TYPE_CHOICES)
     user = models.ForeignKey(User)
-    gag_id = models.TextField()
-    word = models.ForeignKey(Word)
-    expl = models.ForeignKey(Explain)
-    num_people = models.IntegerField()
-    coin_delta = models.IntegerField()
-    score_delta = models.IntegerField()
+    gag_id = models.TextField(null=True)
+    word = models.ForeignKey(Word, null=True)
+    expl = models.ForeignKey(Explain, null=True)
+    num_people = models.IntegerField(null=True)
+    coin_delta = models.IntegerField(null=True)
+    score_delta = models.IntegerField(null=True)
     seen = models.BooleanField()
+
+    def to_dict(self):
+        res = {}
+        res['type'] = dict(self.EVT_TYPE_CHOICES)[self.evt_type]
+        res['gag_id'] = self.gag_id
+        res['word'] = self.word.content if self.word else None
+        res['expl'] = self.expl.content if self.expl else None
+        res['num_people'] = self.num_people
+        res['coin_delta'] = self.coin_delta
+        res['score_delta'] = self.score_delta
+        res['seen'] = self.seen
+        return res
 
 class Log(models.Model):
     event_type = models.TextField()
