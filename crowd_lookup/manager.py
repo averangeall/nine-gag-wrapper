@@ -274,6 +274,36 @@ class UserMgr(Manager):
         user.coin -= treasures.each[treasure]['price']
         user.save()
 
+class NotifiMgr(Manager):
+    def like_word(self, word, gag_id, user):
+        recomms = models.Recomm.objects.filter(gag_id=gag_id, word=word)
+        if not recomms.count() or recomms.count() > 1:
+            return
+
+        assert recomms.count() == 1
+        recomm = recomms[0]
+        if recomm.user == user:
+            return
+        if recomm.val_type != models.Recomm.VAL_POSITIVE:
+            return
+
+        former = models.Notifi(evt_type=models.Notifi.EVT_SOMEONE_AGREE_KEYWORD,
+                               user=recomm.user,
+                               gag_id=gag_id,
+                               word=word,
+                               num_people=1,
+                               coin_delta=3)
+
+        latter = models.Notifi(evt_type=models.Notifi.EVT_YOU_AGREE_KEYWORD,
+                               user=user,
+                               gag_id=gag_id,
+                               word=word,
+                               num_people=1,
+                               coin_delta=3)
+
+        former.save()
+        latter.save()
+
 class LogMgr(Manager):
     def add(self, event_type, event_desc, user=None, user_ip=None):
         log = models.Log(event_type=event_type,
@@ -289,5 +319,6 @@ class AllManagers:
         self.recomm = RecommMgr()
         self.prefer = PreferMgr()
         self.user = UserMgr()
+        self.notifi = NotifiMgr()
         self.log = LogMgr()
 

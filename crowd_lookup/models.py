@@ -70,6 +70,24 @@ class Prefer(models.Model):
     expl = models.ForeignKey(Explain)
     val_type = models.CharField(max_length=2, choices=VAL_TYPE_CHOICES)
 
+class Notifi(models.Model):
+    EVT_SOMEONE_AGREE_KEYWORD = 'SAKW'
+    EVT_YOU_AGREE_KEYWORD = 'YAKW'
+    EVT_TYPE_CHOICES = (
+        (EVT_SOMEONE_AGREE_KEYWORD, 'someone-agree-keyword'),
+        (EVT_YOU_AGREE_KEYWORD, 'you-agree-keyword'),
+    )
+
+    evt_type = models.CharField(max_length=4, choices=EVT_TYPE_CHOICES)
+    user = models.ForeignKey(User)
+    gag_id = models.TextField()
+    word = models.ForeignKey(Word)
+    expl = models.ForeignKey(Explain)
+    num_people = models.IntegerField()
+    coin_delta = models.IntegerField()
+    score_delta = models.IntegerField()
+    seen = models.BooleanField()
+
 class Log(models.Model):
     event_type = models.TextField()
     event_desc = models.TextField()
