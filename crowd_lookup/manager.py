@@ -272,6 +272,13 @@ class UserMgr(Manager):
         user.treasures = ','.join(enableds)
         assert user.coin >= treasures.each[treasure]['price']
         user.coin -= treasures.each[treasure]['price']
+        user.avatar = treasure
+        user.save()
+
+    def use_treasure(self, user, treasure):
+        enableds = self.enabled_treasures(user)
+        assert treasure in enableds
+        user.avatar = treasure
         user.save()
 
 class NotifiMgr(Manager):

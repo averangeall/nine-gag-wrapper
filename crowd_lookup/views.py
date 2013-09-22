@@ -55,6 +55,8 @@ def index(request):
                      '/lookup/image/treasure/?' + urlencode(treasure_args)))
         urls.append(('buy treasure: %s' % treasure,
                      '/lookup/treasure/buy/?' + urlencode(treasure_args)))
+        urls.append(('use treasure: %s' % treasure,
+                     '/lookup/treasure/use/?' + urlencode(treasure_args)))
 
     if excl_recomm_ids != '':
         excl_recomm_ids_args = dict(default_args, excl_recomm_ids=excl_recomm_ids)
@@ -285,8 +287,8 @@ def avatar_image(request):
         mgr.log.add('avatar image', 'invalid', user, user_ip)
         return HttpResponse(make_json_respond('INVALID'))
 
-    avatar = user.avatar if user.avatar else 'mario-big-man'
-    fname = 'crowd_lookup/images/avatars/' + avatar + '.png'
+    avatar = user.avatar if user.avatar else 'mario-big'
+    fname = 'crowd_lookup/images/avatars/' + avatar + '-man.png'
     fr = open(fname)
 
     mgr.log.add('avatar image', 'avatar: %s' % user.avatar, user, user_ip)
@@ -310,7 +312,7 @@ def treasure_image(request):
     enableds = mgr.user.enabled_treasures(user)
     suffix = 'enabled' if treasure in enableds else 'disabled'
 
-    fname = 'crowd_lookup/images/treasures/' + treasure + '-' + suffix + '.png'
+    fname = 'crowd_lookup/images/treasures/' + treasure + '-treasure-' + suffix + '.png'
     fr = open(fname)
     mgr.log.add('treasure image', 'treasure: %s' % treasure, user, user_ip)
     return HttpResponse(fr.read(), mimetype='image/png')
@@ -340,6 +342,28 @@ def buy_treasure(request):
     mgr.user.buy_treasure(user, treasure)
 
     mgr.log.add('buy treasure', 'treasure: %s, remaining coins: %s' % (treasure, user.coin), user, user_ip)
+    return HttpResponse(make_json_respond('OKAY'), {'coins': user.coin})
+
+def use_treasure(request):
+    gag_id, user, user_ip, is_valid = get_basic_info(request)
+    if not is_valid:
+        mgr.log.add('use treasure', 'invalid', user, user_ip)
+        return HttpResponse(make_json_respond('INVALID'))
+
+    treasure = request.GET.get('treasure', None)
+
+    if not treasure:
+        mgr.log.add('use treasure', 'no treasure selected', user, user_ip)
+        return HttpResponse(make_json_respond('FAIL'))
+
+    enableds = mgr.user.enabled_treasures(user)
+    if treasure not in enableds:
+        mgr.log.add('use treasure', 'treasure: %s, not in enabled list' % treasure, user, user_ip)
+        return HttpResponse(make_json_respond('FAIL'))
+
+    mgr.user.use_treasure(user, treasure)
+
+    mgr.log.add('use treasure', 'treasure: %s' % treasure, user, user_ip)
     return HttpResponse(make_json_respond('OKAY'))
 
 def count_notifi(request):

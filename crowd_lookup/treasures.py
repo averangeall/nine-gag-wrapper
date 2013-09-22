@@ -3,32 +3,32 @@
 
 info = [
     {
-        'id': 'mario-fire-treasure',
+        'id': 'mario-fire',
         'name': '火焰花',
         'price': 10,
     },
     {
-        'id': 'mario-fox-treasure',
+        'id': 'mario-fox',
         'name': '狐狸葉子',
         'price': 20,
     },
     {
-        'id': 'mario-frog-treasure',
+        'id': 'mario-frog',
         'name': '青蛙裝',
         'price': 30,
     },
     {
-        'id': 'mario-ice-treasure',
+        'id': 'mario-ice',
         'name': '雪子鎚子',
         'price': 35,
     },
     {
-        'id': 'mario-raccoon-treasure',
+        'id': 'mario-raccoon',
         'name': '浣熊裝',
         'price': 45,
     },
     {
-        'id': 'mario-star-treasure',
+        'id': 'mario-star',
         'name': '無敵星星',
         'price': 10,
     },
