@@ -17,6 +17,7 @@ mgr = AllManagers()
 def index(request):
     user_id = 907954370
     user_key = 'lsopa7KtFmsJWv6UlZ78ZJ0z0Gsk5Qq3'
+
     gag_id = request.GET.get('gag_id', 'ajYbzzx').encode('utf8')
     new_name = request.GET.get('new_name', '').encode('utf8')
     treasure = request.GET.get('treasure', '').encode('utf8')
@@ -24,9 +25,27 @@ def index(request):
     word_id = request.GET.get('word_id', None)
     expl_id = request.GET.get('expl_id', None)
     expl_str = request.GET.get('expl_str', '').encode('utf8')
-    excl_recomm_ids = request.GET.get('excl_recomm_ids', '')
+    excl_recomm_ids = request.GET.get('excl_recomm_ids', '').encode('utf8')
     excl_expl_ids = request.GET.get('excl_expl_ids', '').encode('utf8')
+    notifi_id = request.GET.get('notifi_id', None)
+
+    fields = []
+    fields.append({'name': 'gag_id', 'value': gag_id})
+    fields.append({'name': 'new_name', 'value': new_name})
+    fields.append({'name': 'treasure', 'value': treasure})
+    fields.append({'name': 'word_str', 'value': word_str})
+    fields.append({'name': 'word_id', 'value': word_id})
+    fields.append({'name': 'expl_id', 'value': expl_id})
+    fields.append({'name': 'expl_str', 'value': expl_str})
+    fields.append({'name': 'excl_recomm_ids', 'value': excl_recomm_ids})
+    fields.append({'name': 'excl_expl_ids', 'value': excl_expl_ids})
+    fields.append({'name': 'notifi_id', 'value': notifi_id})
+    for field in fields:
+        if field['value'] == None:
+            field['value'] = ''
+
     default_args = {'gag_id': gag_id, 'user_id': user_id, 'valid_key': user_key}
+
     urls = []
 
     urls.append(('create user',
@@ -92,17 +111,14 @@ def index(request):
             expl_str_args = dict(word_id_args, expl_str=expl_str)
             urls.append(('provide explain: %s, %s' % (word_id, expl_str.decode('utf8')),
                          '/lookup/explain/provide/?' + urlencode(expl_str_args)))
+    if notifi_id:
+        notifi_id_args = dict(default_args, notifi_id=notifi_id)
+        urls.append(('enable notifi: %s' % notifi_id,
+                     '/lookup/notifi/enable/?' + urlencode(notifi_id_args)))
+
     dictt = {}
-    dictt['gag_id'] = gag_id
-    dictt['new_name'] = new_name
-    dictt['treasure'] = treasure
     dictt['urls'] = urls
-    dictt['word_str'] = word_str
-    dictt['word_id'] = word_id if word_id is not None else ''
-    dictt['expl_id'] = expl_id if expl_id is not None else ''
-    dictt['expl_str'] = expl_str
-    dictt['excl_recomm_ids'] = excl_recomm_ids
-    dictt['excl_expl_ids'] = excl_expl_ids
+    dictt['fields'] = fields
     return render_to_response('index.html', dictt)
 
 def test(request):
@@ -385,6 +401,23 @@ def get_notifi(request):
     notifis = mgr.notifi.get_by_user(user, True)
 
     return HttpResponse(make_json_respond('OKAY', {'notifis': notifis}))
+
+def enable_notifi(request):
+    gag_id, user, user_ip, is_valid = get_basic_info(request)
+    if not is_valid:
+        mgr.log.add('enable notifi', 'invalid', user, user_ip)
+        return HttpResponse(make_json_respond('INVALID'))
+
+    notifi_id = request.GET.get('notifi_id', None)
+    notifi = mgr.notifi.get(notifi_id)
+    success = mgr.notifi.enable(notifi, user)
+
+    if not success:
+        mgr.log.add('enable notifi', 'failed to enable notifi %s' % notifi_id, user, user_ip)
+        return HttpResponse(make_json_respond('FAIL'))
+
+    mgr.log.add('enable notifi', 'enabled notifi %s' % notifi_id, user, user_ip)
+    return HttpResponse(make_json_respond('OKAY'))
 
 def info_treasure(request):
     gag_id, user, user_ip, is_valid = get_basic_info(request)

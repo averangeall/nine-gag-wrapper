@@ -31,6 +31,7 @@ urlpatterns = patterns('',
 
     url(r'^lookup/notifi/count/$', 'crowd_lookup.views.count_notifi'),
     url(r'^lookup/notifi/get/$', 'crowd_lookup.views.get_notifi'),
+    url(r'^lookup/notifi/enable/$', 'crowd_lookup.views.enable_notifi'),
 
     # Examples:
     # url(r'^$', 'nine_gag_wrapper.views.home', name='home'),

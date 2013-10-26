@@ -282,6 +282,12 @@ class UserMgr(Manager):
         user.save()
 
 class NotifiMgr(Manager):
+    def get(self, notifi_id):
+        try:
+            return models.Notifi.objects.get(id=notifi_id)
+        except:
+            return None
+
     def like_word(self, word, gag_id, user):
         recomms = models.Recomm.objects.filter(gag_id=gag_id, word=word)
         if not recomms.count() or recomms.count() > 1:
@@ -323,6 +329,18 @@ class NotifiMgr(Manager):
                 notifi.seen = True
                 notifi.save()
         return dicts
+
+    def enable(self, notifi, user):
+        if not notifi or notifi.user != user or notifi.received:
+            return False
+        if notifi.coin_delta:
+            user.coin += notifi.coin_delta
+        if notifi.score_delta:
+            user.score += notifi.score_delta
+        notifi.received = True
+        notifi.save()
+        user.save()
+        return True
 
 class LogMgr(Manager):
     def add(self, event_type, event_desc, user=None, user_ip=None):

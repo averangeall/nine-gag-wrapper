@@ -87,9 +87,11 @@ class Notifi(models.Model):
     coin_delta = models.IntegerField(null=True)
     score_delta = models.IntegerField(null=True)
     seen = models.BooleanField()
+    received = models.BooleanField()
 
     def to_dict(self):
         res = {}
+        res['id'] = self.id
         res['type'] = dict(self.EVT_TYPE_CHOICES)[self.evt_type]
         res['gag_id'] = self.gag_id
         res['word'] = self.word.content if self.word else None
@@ -98,6 +100,7 @@ class Notifi(models.Model):
         res['coin_delta'] = self.coin_delta
         res['score_delta'] = self.score_delta
         res['seen'] = self.seen
+        res['received'] = self.received
         return res
 
 class Log(models.Model):
