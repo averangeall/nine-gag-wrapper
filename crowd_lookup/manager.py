@@ -322,7 +322,7 @@ class NotifiMgr(Manager):
         return notifis.count()
 
     def get_by_user(self, user, see=False):
-        notifis = models.Notifi.objects.filter(user=user)
+        notifis = models.Notifi.objects.filter(user=user).order_by('-id')
         dicts = tools._make_dicts(notifis)
         if see:
             for notifi in notifis:

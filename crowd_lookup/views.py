@@ -15,8 +15,8 @@ dictt = NineDict()
 mgr = AllManagers()
 
 def index(request):
-    user_id = 907954370
-    user_key = 'lsopa7KtFmsJWv6UlZ78ZJ0z0Gsk5Qq3'
+    user_id = 119640008
+    user_key = 'AQ6h7OqByGjfSh2DraYtqcei1V6Tmgx0'
 
     gag_id = request.GET.get('gag_id', 'ajYbzzx').encode('utf8')
     new_name = request.GET.get('new_name', '').encode('utf8')
@@ -400,6 +400,7 @@ def get_notifi(request):
 
     notifis = mgr.notifi.get_by_user(user, True)
 
+    mgr.log.add('get notifi', 'got %s notifis' % len(notifis), user, user_ip)
     return HttpResponse(make_json_respond('OKAY', {'notifis': notifis}))
 
 def enable_notifi(request):
