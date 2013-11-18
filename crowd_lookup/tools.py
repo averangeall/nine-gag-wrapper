@@ -56,10 +56,9 @@ def gen_user_info():
     for i in range(32):
         user_key += random.choice(choices)
 
-    return user_id, user_key
+    user_name = random.choice(names.front) + random.choice(names.middle) + random.choice(names.back)
 
-def gen_user_name():
-    return random.choice(names.front) + random.choice(names.middle) + random.choice(names.back)
+    return user_id, user_key, user_name
 
 def is_image(url):
     tmp_fname = '/tmp/%d' % random.randint(0, 99999)

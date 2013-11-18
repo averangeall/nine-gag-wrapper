@@ -7,7 +7,7 @@ from django.http import HttpResponse
 from django.shortcuts import render_to_response
 import models
 from dictionary import NineDict
-from tools import get_basic_info, make_json_respond, gen_user_info, gen_user_name, get_client_ip
+from tools import get_basic_info, make_json_respond, gen_user_info, get_client_ip
 from manager import AllManagers
 import treasures
 
@@ -128,8 +128,7 @@ def test(request):
     return HttpResponse(make_json_respond('OKAY', [youtube.query(word_str)]))
 
 def new_user(request):
-    user_id, user_key = gen_user_info()
-    user_name = gen_user_name()
+    user_id, user_key, user_name = gen_user_info()
     mgr.user.create(user_id, user_key, user_name)
     mgr.log.add('generate new user', 'user_id: %s' % user_id, user_ip=get_client_ip(request))
     return HttpResponse(make_json_respond('OKAY', {'id': user_id, 'key': user_key}))
