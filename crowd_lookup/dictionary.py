@@ -48,10 +48,7 @@ class NineDict:
         return self._mgr.prefer.going_plain(expl, gag_id, user)
 
     def provide_expl(self, expl_str, word, user):
-        if user.id == 0:
-            init_score = point.ADMIN_EXPL_INIT_POINT
-        else:
-            init_score = point.USER_EXPL_INIT_POINT
+        init_score = point.PROVIDE_EXPL_INIT_POINT
         expl = self._mgr.explain.add(expl_str=expl_str, word=word, init_score=init_score, source='U%d' % user.id)
         if not expl:
             return []
@@ -64,11 +61,11 @@ class NineDict:
         th.start()
 
     def _get_fast_expls_from_web(self, word, gag_id):
-        gt_upper_bound = point.GT_SINGLE_EXPL_INIT_POINT if re.match('^[^\s]+$', word.content) else point.GT_MULTIPLE_EXPL_INIT_POINT
+        gt_upper_bound = point.GT_EXPL_INIT_POINT
         num_expls = self._get_expls_from_browser(word, self._google_translate, gt_upper_bound)
 
     def _get_complete_expls_from_web(self, word, gag_id):
-        gt_upper_bound = point.GT_SINGLE_EXPL_INIT_POINT if re.match('^[^\s]+$', word.content) else point.GT_MULTIPLE_EXPL_INIT_POINT
+        gt_upper_bound = point.GT_EXPL_INIT_POINT
         num_expls = self._get_expls_from_browser(word, self._google_translate, gt_upper_bound)
 
         ud_upper_bound = point.UD_NO_GT_EXPL_INIT_POINT if num_expls == 0 else point.UD_WITH_GT_EXPL_INIT_POINT

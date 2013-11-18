@@ -96,10 +96,7 @@ class RecommMgr(Manager):
             else:
                 assert False
 
-            if recomm.user.id == 0:
-                points = point.ADMIN_RECOMM_VAL_POINT * valence
-            else:
-                points = point.USER_RECOMM_VAL_POINT * valence
+            points = point.RECOMM_VAL_POINT * valence
 
             if recomm.word in counts:
                 counts[recomm.word] += points
@@ -234,10 +231,7 @@ class PreferMgr(Manager):
                     points = -point.SELF_HATE_EXPL_POINT
                 else:
                     points = 0.0
-            elif prefer.user.id == 0:
-                points = point.ADMIN_EXPL_VAL_POINT * valence
-            else:
-                points = point.USER_EXPL_VAL_POINT * valence
+            points = point.PROVIDE_EXPL_VAL_POINT * valence
 
             if prefer.expl in counts:
                 counts[prefer.expl] += points
