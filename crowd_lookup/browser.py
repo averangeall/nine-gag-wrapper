@@ -122,7 +122,7 @@ class GoogleTranslate(BaseBrowser):
             assert texts
             fancy_url = 'http://translate.google.com/#en/zh-TW/%s' % word
             translate = texts.string
-            if translate != word:
+            if translate.strip().lower() != word.strip().lower():
                 res.append((texts.string, fancy_url, models.Explain.REPR_TEXT))
         except:
             raise
