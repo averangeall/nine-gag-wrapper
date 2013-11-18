@@ -231,7 +231,7 @@ class PreferMgr(Manager):
                     points = -point.SELF_HATE_EXPL_POINT
                 else:
                     points = 0.0
-            points = point.PROVIDE_EXPL_VAL_POINT * valence
+            points = point.EXPL_VAL_POINT * valence
 
             if prefer.expl in counts:
                 counts[prefer.expl] += points
