@@ -3,6 +3,7 @@ import models
 import browser
 import tools
 import point
+import threading
 from manager import AllManagers
 
 class NineDict:
@@ -29,7 +30,9 @@ class NineDict:
             self._get_expls_from_web(word, gag_id)
             expls = self._mgr.prefer.query(word, gag_id, user)
         expls = filter(lambda expl: expl.id not in excl_expl_ids, expls)[:5]
+        self._mgr.notifi.hit_word(word, gag_id, user)
         self._mgr.recomm.going_up(word, gag_id, user)
+        self._mgr.notifi.accum_word(user)
         res = tools._make_dicts(expls)
         for i, item in enumerate(res):
             expl = self._mgr.explain.get(expl_id=item['id'])
@@ -46,17 +49,24 @@ class NineDict:
         return self._mgr.prefer.going_plain(expl, gag_id, user)
 
     def provide_expl(self, expl_str, word, user):
-        if user.id == 0:
-            init_score = point.ADMIN_EXPL_INIT_POINT
-        else:
-            init_score = point.USER_EXPL_INIT_POINT
+        init_score = point.PROVIDE_EXPL_INIT_POINT
         expl = self._mgr.explain.add(expl_str=expl_str, word=word, init_score=init_score, source='U%d' % user.id)
         if not expl:
             return []
         return tools._make_dicts([expl])
 
     def _get_expls_from_web(self, word, gag_id):
-        gt_upper_bound = point.GT_SINGLE_EXPL_INIT_POINT if re.match('^[^\s]+$', word.content) else point.GT_MULTIPLE_EXPL_INIT_POINT
+        self._get_fast_expls_from_web(word, gag_id)
+
+        th = threading.Thread(target=self._get_complete_expls_from_web, args=[word, gag_id])
+        th.start()
+
+    def _get_fast_expls_from_web(self, word, gag_id):
+        gt_upper_bound = point.GT_EXPL_INIT_POINT
+        num_expls = self._get_expls_from_browser(word, self._google_translate, gt_upper_bound)
+
+    def _get_complete_expls_from_web(self, word, gag_id):
+        gt_upper_bound = point.GT_EXPL_INIT_POINT
         num_expls = self._get_expls_from_browser(word, self._google_translate, gt_upper_bound)
 
         ud_upper_bound = point.UD_NO_GT_EXPL_INIT_POINT if num_expls == 0 else point.UD_WITH_GT_EXPL_INIT_POINT

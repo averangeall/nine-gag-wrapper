@@ -122,7 +122,7 @@ class GoogleTranslate(BaseBrowser):
             assert texts
             fancy_url = 'http://translate.google.com/#en/zh-TW/%s' % word
             translate = texts.string
-            if translate != word:
+            if translate.strip().lower() != word.strip().lower():
                 res.append((texts.string, fancy_url, models.Explain.REPR_TEXT))
         except:
             raise
@@ -157,6 +157,8 @@ class YouTube(BaseBrowser):
         content = self._get_page_content(url)
         search = json.loads(content)
         res = []
+        if 'feed' not in search or 'entry' not in search['feed']:
+            return []
         for entry in search['feed']['entry']:
             info = entry['id']['$t']
             mo = re.match('.+?video:(.+)', info)

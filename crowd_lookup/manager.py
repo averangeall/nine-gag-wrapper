@@ -3,6 +3,7 @@ import mimetypes
 import models
 import point
 import tools
+import treasures
 
 class Manager:
     pass
@@ -95,10 +96,7 @@ class RecommMgr(Manager):
             else:
                 assert False
 
-            if recomm.user.id == 0:
-                points = point.ADMIN_RECOMM_VAL_POINT * valence
-            else:
-                points = point.USER_RECOMM_VAL_POINT * valence
+            points = point.RECOMM_VAL_POINT * valence
 
             if recomm.word in counts:
                 counts[recomm.word] += points
@@ -233,10 +231,7 @@ class PreferMgr(Manager):
                     points = -point.SELF_HATE_EXPL_POINT
                 else:
                     points = 0.0
-            elif prefer.user.id == 0:
-                points = point.ADMIN_EXPL_VAL_POINT * valence
-            else:
-                points = point.USER_EXPL_VAL_POINT * valence
+            points = point.EXPL_VAL_POINT * valence
 
             if prefer.expl in counts:
                 counts[prefer.expl] += points
@@ -252,13 +247,101 @@ class UserMgr(Manager):
         except:
             return None
 
-    def create(self, user_id, user_key):
-        user = models.User(id=user_id, key=user_key, name=None)
+    def create(self, user_id, user_key, user_name):
+        user = models.User(id=user_id, key=user_key, name=user_name, score=0, coin=0, avatar=None, treasures='')
         user.save()
 
     def rename(self, user, new_name):
         user.name = new_name
         user.save()
+
+    def enabled_treasures(self, user):
+        enableds = filter(lambda x: x != '', user.treasures.split(','))
+        return enableds
+
+    def buy_treasure(self, user, treasure):
+        enableds = self.enabled_treasures(user)
+        assert treasure not in enableds
+        enableds.append(treasure)
+        user.treasures = ','.join(enableds)
+        assert user.coin >= treasures.each[treasure]['price']
+        user.coin -= treasures.each[treasure]['price']
+        user.avatar = treasure
+        user.save()
+
+    def use_treasure(self, user, treasure):
+        enableds = self.enabled_treasures(user)
+        assert treasure in enableds
+        user.avatar = treasure
+        user.save()
+
+class NotifiMgr(Manager):
+    def get(self, notifi_id):
+        try:
+            return models.Notifi.objects.get(id=notifi_id)
+        except:
+            return None
+
+    def hit_word(self, word, gag_id, user):
+        recomms = models.Recomm.objects.filter(gag_id=gag_id, word=word)
+        if not recomms.count() or recomms.count() > 1:
+            return
+
+        assert recomms.count() == 1
+        recomm = recomms[0]
+        if recomm.user == user:
+            return
+        if recomm.val_type != models.Recomm.VAL_POSITIVE:
+            return
+
+        former = models.Notifi(evt_type=models.Notifi.EVT_SOMEONE_AGREE_KEYWORD,
+                               user=recomm.user,
+                               gag_id=gag_id,
+                               word=word,
+                               num_people=1,
+                               coin_delta=3,
+                               seen=False,
+                               received=False)
+
+        latter = models.Notifi(evt_type=models.Notifi.EVT_YOU_AGREE_KEYWORD,
+                               user=user,
+                               gag_id=gag_id,
+                               word=word,
+                               num_people=1,
+                               coin_delta=3,
+                               seen=False,
+                               received=False)
+
+        former.save()
+        latter.save()
+
+    def accum_word(self, user):
+        pass
+
+    def get_count(self, user):
+        notifis = models.Notifi.objects.filter(user=user, seen=False)
+        return notifis.count()
+
+    def get_by_user(self, user, see=False):
+        notifis = models.Notifi.objects.filter(user=user).order_by('-id')
+        dicts = tools._make_dicts(notifis)
+        if see:
+            for notifi in notifis:
+                notifi.seen = True
+                notifi.save()
+        return dicts
+
+    def enable(self, notifi, user):
+        if not notifi or notifi.user != user or notifi.received:
+            return False
+        if notifi.coin_delta:
+            user.coin += notifi.coin_delta
+        if notifi.score_delta:
+            user.score += notifi.score_delta
+        notifi.received = True
+        notifi.save()
+        user.save()
+        return True
 
 class LogMgr(Manager):
     def add(self, event_type, event_desc, user=None, user_ip=None):
@@ -275,5 +358,6 @@ class AllManagers:
         self.recomm = RecommMgr()
         self.prefer = PreferMgr()
         self.user = UserMgr()
+        self.notifi = NotifiMgr()
         self.log = LogMgr()
 

@@ -7,14 +7,9 @@
 
     <body>
         <form>
-            gag_id: <input type="text" name="gag_id" value="{{ gag_id }}" /><br />
-            new_name: <input type="text" name="new_name" value="{{ new_name }}" /><br />
-            word_str: <input type="text" name="word_str" value="{{ word_str }}" /><br />
-            word_id: <input type="text" name="word_id" value="{{ word_id }}" /><br />
-            expl_id: <input type="text" name="expl_id" value="{{ expl_id }}" /><br />
-            expl_str: <input type="text" name="expl_str" value="{{ expl_str }}" /><br />
-            excl_recomm_id: <input type="text" name="excl_recomm_ids" value="{{ excl_recomm_ids }}" /><br />
-            excl_expl_id: <input type="text" name="excl_expl_ids" value="{{ excl_expl_ids }}" /><br />
+            {% for field in fields %}
+                {{ field.name }}: <input type="text" name="{{ field.name }}" value="{{ field.value }}" /><br />
+            {% endfor %}
             <input type="submit" /><br />
         </form>
         <p />
