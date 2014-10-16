@@ -282,7 +282,7 @@ class NotifiMgr(Manager):
         except:
             return None
 
-    def like_word(self, word, gag_id, user):
+    def hit_word(self, word, gag_id, user):
         recomms = models.Recomm.objects.filter(gag_id=gag_id, word=word)
         if not recomms.count() or recomms.count() > 1:
             return
@@ -299,17 +299,24 @@ class NotifiMgr(Manager):
                                gag_id=gag_id,
                                word=word,
                                num_people=1,
-                               coin_delta=3)
+                               coin_delta=3,
+                               seen=False,
+                               received=False)
 
         latter = models.Notifi(evt_type=models.Notifi.EVT_YOU_AGREE_KEYWORD,
                                user=user,
                                gag_id=gag_id,
                                word=word,
                                num_people=1,
-                               coin_delta=3)
+                               coin_delta=3,
+                               seen=False,
+                               received=False)
 
         former.save()
         latter.save()
+
+    def accum_word(self, user):
+        pass
 
     def get_count(self, user):
         notifis = models.Notifi.objects.filter(user=user, seen=False)

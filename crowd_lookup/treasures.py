@@ -1,5 +1,6 @@
 # -*- coding: utf8 -*-
 
+# you can add your own treasures
 
 info = [
     {
@@ -37,3 +38,4 @@ info = [
 each = {}
 for item in info:
     each[item['id']] = item
+

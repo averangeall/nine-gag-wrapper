@@ -6,6 +6,7 @@ Implemented with Django framework.
 
 Use Postgresql as database.
 
+
 ## API Types
 
 The APIs can be divided into several types:
@@ -15,4 +16,15 @@ The APIs can be divided into several types:
 * Explanations for keyphrases
 * Images showing in the personal information
 * Notifications for the user
+
+
+## Config Files
+
+There are several files you can config:
+
+* treasures.py
+* point.py
+* accum.py
+
+The details are in those files.
 

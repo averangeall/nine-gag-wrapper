@@ -30,8 +30,9 @@ class NineDict:
             self._get_expls_from_web(word, gag_id)
             expls = self._mgr.prefer.query(word, gag_id, user)
         expls = filter(lambda expl: expl.id not in excl_expl_ids, expls)[:5]
-        self._mgr.notifi.like_word(word, gag_id, user)
+        self._mgr.notifi.hit_word(word, gag_id, user)
         self._mgr.recomm.going_up(word, gag_id, user)
+        self._mgr.notifi.accum_word(user)
         res = tools._make_dicts(expls)
         for i, item in enumerate(res):
             expl = self._mgr.explain.get(expl_id=item['id'])
