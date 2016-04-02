@@ -1,9 +1,0 @@
-def default():
-    return {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'ninedict',
-        'USER': 'ninegag',
-        'PASSWORD': '',
-        'HOST': '',
-        'PORT': '',
-    }
